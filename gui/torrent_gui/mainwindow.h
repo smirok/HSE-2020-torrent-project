@@ -1,22 +1,27 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
+
 
 #include <QMainWindow>
+
 
 namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
-{
+
+class MainWindow : public QMainWindow {
+
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_add_torrent_button_clicked();
+
 private:
     Ui::MainWindow *ui;
+
 };
 
-#endif // MAINWINDOW_H

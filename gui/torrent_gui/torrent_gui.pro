@@ -24,15 +24,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++11
 
+
+INCLUDEPATH += /code/include/
+LIBS += -L/code/include/boost/bin.v2/libs/ -lboost_system -lboost_filesystem
+
+
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+    open_torrent_window.cpp \
+    mainwindow.cpp
 
 HEADERS += \
-        mainwindow.h
+    open_torrent_window.h \
+    mainwindow.h
 
 FORMS += \
-        mainwindow.ui
+    open_torrent_window.ui \
+    mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

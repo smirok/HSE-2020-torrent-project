@@ -1,22 +1,30 @@
-#ifndef OPEN_TORRENT_WINDOW_H
-#define OPEN_TORRENT_WINDOW_H
+#pragma once
+
 
 #include <QDialog>
+
 
 namespace Ui {
 class OpenTorrentWindow;
 }
 
-class OpenTorrentWindow : public QDialog
-{
+
+class OpenTorrentWindow : public QDialog {
+
     Q_OBJECT
 
 public:
     explicit OpenTorrentWindow(QWidget *parent = nullptr);
     ~OpenTorrentWindow();
 
+private slots:
+    void on_select_torrent_button_clicked();
+
+    void on_select_directory_button_clicked();
+
+    void on_add_torrent_button_clicked();
+
 private:
     Ui::OpenTorrentWindow *ui;
-};
 
-#endif // OPEN_TORRENT_WINDOW_H
+};
