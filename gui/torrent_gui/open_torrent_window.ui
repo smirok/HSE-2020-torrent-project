@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Open torrent</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
@@ -134,7 +134,7 @@
      <item>
       <widget class="QPushButton" name="add_torrent_button">
        <property name="text">
-        <string>Add torrent</string>
+        <string>Open torrent</string>
        </property>
       </widget>
      </item>

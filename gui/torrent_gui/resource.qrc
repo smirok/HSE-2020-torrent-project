@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/resource">
         <file>img/open_torrent.png</file>
+        <file>img/delete_torrent.png</file>
     </qresource>
 </RCC>

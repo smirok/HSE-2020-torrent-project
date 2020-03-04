@@ -5,10 +5,10 @@
 #include <vector>
 
 
-class Torrent {
+struct Torrent {
+    Torrent(QString name, QString name_locate) : name_(name), name_locate_(name_locate) {}
     QString name_;
-public:
-    Torrent(QString name) : name_(name) {}
+    QString name_locate_;
 };
 
 
@@ -27,6 +27,8 @@ public:
 
 private slots:
     void on_action_open_torrent_triggered();
+
+    void on_action_delete_torrent_triggered();
 
 private:
     Ui::MainWindow *ui_;

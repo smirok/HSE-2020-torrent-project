@@ -34,6 +34,7 @@
      <string>File</string>
     </property>
     <addaction name="action_open_torrent"/>
+    <addaction name="action_delete_torrent"/>
    </widget>
    <addaction name="menuCreate"/>
   </widget>
@@ -45,6 +46,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="action_open_torrent"/>
+   <addaction name="action_delete_torrent"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_open_torrent">
@@ -54,6 +56,15 @@
    </property>
    <property name="text">
     <string>Open</string>
+   </property>
+  </action>
+  <action name="action_delete_torrent">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resource/img/delete_torrent.png</normaloff>:/resource/img/delete_torrent.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete</string>
    </property>
   </action>
  </widget>
