@@ -2,6 +2,14 @@
 
 
 #include <QMainWindow>
+#include <vector>
+
+
+class Torrent {
+    QString name_;
+public:
+    Torrent(QString name) : name_(name) {}
+};
 
 
 namespace Ui {
@@ -18,10 +26,11 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_add_torrent_button_clicked();
+    void on_action_open_torrent_triggered();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow *ui_;
+    std::vector<Torrent> cur_torrens_;
 
 };
 

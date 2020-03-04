@@ -14,19 +14,11 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="add_torrent_button">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>100</y>
-      <width>131</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Add torrent</string>
-    </property>
-   </widget>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QListWidget" name="list_cur_torrents"/>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -37,6 +29,13 @@
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuCreate">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="action_open_torrent"/>
+   </widget>
+   <addaction name="menuCreate"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -45,10 +44,22 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_open_torrent"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_open_torrent">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resource/img/open_torrent.png</normaloff>:/resource/img/open_torrent.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>
