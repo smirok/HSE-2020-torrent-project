@@ -24,11 +24,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++11
 
-
-INCLUDEPATH += /code/include/
-LIBS += -L/code/include/boost/bin.v2/libs/ -lboost_system -lboost_filesystem
-
-
 SOURCES += \
         main.cpp \
     open_torrent_window.cpp \

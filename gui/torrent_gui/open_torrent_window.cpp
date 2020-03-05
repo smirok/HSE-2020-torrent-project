@@ -4,9 +4,8 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
-#include <fstream>
+#include <QDir>
 #include <iostream>
-#include <boost/filesystem.hpp>
 
 
 OpenTorrentWindow::OpenTorrentWindow(QWidget *parent) : QDialog(parent), ui_(new Ui::OpenTorrentWindow) {
@@ -35,11 +34,13 @@ void OpenTorrentWindow::on_add_torrent_button_clicked() {
     path_to_torrent_ = ui_->torrent_line->text();
     path_to_save_directory_ = ui_->directory_line->text();
 
-    if (!boost::filesystem::exists(path_to_torrent_.toStdString())) {
+    QFileInfo file(path_to_torrent_);
+    if (!file.exists()) {
         QMessageBox::warning(this, "Wrong path", "Torrent file doesn't exist");
         return;
     }
-    if (!boost::filesystem::exists(path_to_save_directory_.toStdWString())) {
+    QDir save_directory(path_to_save_directory_);
+    if (!save_directory.exists()) {
         QMessageBox::warning(this, "Wrong path", "Save directory doesn't exist");
         return;
     }
