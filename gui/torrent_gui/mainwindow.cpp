@@ -6,14 +6,49 @@
 #include <iostream>
 #include <vector>
 #include <QMessageBox>
+#include <QJsonDocument>
+#include <QDebug>
+#include <QFile>
+#include <QJsonObject>
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainWindow) {
+
     ui_->setupUi(this);
+
+    QFile file("save.json");
+    file.open(QIODevice::ReadOnly);
+    QJsonDocument doc(QJsonDocument::fromJson(file.readAll()));
+    QJsonObject json(doc.object());
+    file.close();
+
+    int count_torrent = json["count"].toString().toInt();
+
+    for (int i = 0; i < count_torrent; i++) {
+        QString id = QString::number(i);
+        QString name = json[id].toObject()["name"].toString();
+        QString location = json[id].toObject()["location"].toString();
+        cur_torrens_.push_back(Torrent(name, location));
+        ui_->list_cur_torrents->addItem(name);
+    }
+
 }
 
 
 MainWindow::~MainWindow() {
+    QJsonObject data_base;
+    data_base.insert("count", QString::number(cur_torrens_.size()));
+    for (size_t i = 0; i < cur_torrens_.size(); i++) {
+        QJsonObject torrent;
+        torrent.insert("name", cur_torrens_[i].name_);
+        torrent.insert("location", cur_torrens_[i].name_locate_);
+        data_base.insert(QString::number(i), torrent);
+    }
+    QJsonDocument doc(data_base);
+    QFile file("save.json");
+    file.open(QIODevice::WriteOnly);
+    file.write(doc.toJson());
+    file.close();
     delete ui_;
 }
 

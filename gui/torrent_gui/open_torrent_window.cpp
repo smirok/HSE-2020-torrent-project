@@ -34,7 +34,7 @@ void OpenTorrentWindow::on_add_torrent_button_clicked() {
     path_to_torrent_ = ui_->torrent_line->text();
     path_to_save_directory_ = ui_->directory_line->text();
 
-    QFileInfo file(path_to_torrent_);
+    QFile file(path_to_torrent_);
     if (!file.exists()) {
         QMessageBox::warning(this, "Wrong path", "Torrent file doesn't exist");
         return;

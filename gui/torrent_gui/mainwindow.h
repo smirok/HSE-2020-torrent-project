@@ -27,7 +27,6 @@ public:
 
 private slots:
     void on_action_open_torrent_triggered();
-
     void on_action_delete_torrent_triggered();
 
 private:
