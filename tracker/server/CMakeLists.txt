@@ -1,10 +1,18 @@
 cmake_minimum_required(VERSION 3.15)
-project(examp_boost_asio_udp_echo)
+project(server)
 
 set(CMAKE_CXX_STANDARD 17)
 
+include_directories(include)
+add_executable(client
+        src/client.cpp)
 
-add_executable(client client.cpp)
 target_link_libraries(client boost_system boost_thread pthread)
-add_executable(server server.cpp)
+
+
+include_directories(include)
+add_executable(server
+        src/main.cpp
+        src/server.cpp
+        include/server.hpp)
 target_link_libraries(server boost_system boost_thread pthread)
