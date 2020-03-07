@@ -39,3 +39,4 @@ private:
     std::map<std::string, Torrent> torrents_;
     enum {max_length = 1024}; // 1024??
 };
+
