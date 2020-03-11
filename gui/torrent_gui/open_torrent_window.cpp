@@ -39,6 +39,7 @@ void OpenTorrentWindow::on_add_torrent_button_clicked() {
         QMessageBox::warning(this, "Wrong path", "Torrent file doesn't exist");
         return;
     }
+
     QDir save_directory(path_to_save_directory_);
     if (!save_directory.exists()) {
         QMessageBox::warning(this, "Wrong path", "Save directory doesn't exist");
