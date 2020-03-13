@@ -25,6 +25,7 @@ void API::enter_dir(const std::string &path) {
 
 void API::start_download() try {
     cl.ses.async_add_torrent(cl.p); // формируем торрент скачку
+    torrent_to_hash[cl.p.name] = cl.p.info_hash;
 
     for (;;) {
         std::vector<lt::alert *> alerts;
@@ -58,4 +59,19 @@ void API::start_download() try {
     std::cout << "Download complete" << std::endl;
 } catch (std::exception const &e) {
     std::cerr << "ERROR: " << e.what() << "\n";
+}
+
+void API::pause_download(std::string &file_name) {
+    lt::sha1_hash hash = torrent_to_hash[file_name];
+    cl.ses.find_torrent(hash).pause(); // нашли торрент по хэшу и остановили!
+}
+
+void API::resume_download(std::string &file_name) {
+    lt::sha1_hash hash = torrent_to_hash[file_name];
+    cl.ses.find_torrent(hash).resume(); // --//-- и продолжили скачку
+}
+
+void API::remove_download(std::string &file_name) {
+    lt::sha1_hash hash = torrent_to_hash[file_name];
+    cl.ses.remove_torrent(cl.ses.find_torrent(hash)); // --//-- и удалили скачку
 }

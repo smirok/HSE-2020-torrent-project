@@ -2,8 +2,7 @@
 #include "API.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    API api;
+    API api; // тут запускается сессия
     std::string directory,file_name;
     std::cout << "Место установки: \n";
     std::cin >> directory;
