@@ -5,15 +5,16 @@
 
 #include <iostream>
 #include <vector>
+#include <cassert>
+
 #include <QMessageBox>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QDebug>
 #include <QFile>
-#include <QJsonObject>
 
 
 // =============================================JSON=============================================
-
 
 void MainWindow::read_database(QString file_name) {
     QFile file(file_name);
@@ -27,7 +28,7 @@ void MainWindow::read_database(QString file_name) {
         QString id = QString::number(i);
         QString name = json[id].toObject()["name"].toString();
         QString location = json[id].toObject()["location"].toString();
-        cur_torrens_.emplace_back(Torrent(name, location));
+        cur_torrens_.emplace_back(Torrent(i, name, location));
         ui_->list_cur_torrents->addItem(name);
     }
 }
@@ -93,7 +94,6 @@ bool MainWindow::check_database(QString file_name) {
 
 // ============================================METHODS============================================
 
-
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainWindow) {
     ui_->setupUi(this);
     if (check_database("save.json")) {
@@ -108,8 +108,33 @@ MainWindow::~MainWindow() {
 }
 
 
-// =============================================SLOTS=============================================
+int MainWindow::find_index(int torrent_id) {
+    int index = -1;
+    for (size_t i = 0; i < cur_torrens_.size(); i++) {
+        if (cur_torrens_[i].id_ == torrent_id) {
+            index = static_cast<int>(i);
+        }
+    }
+    return index;
+}
 
+
+QString MainWindow::make_progress(size_t percent, size_t index) {
+    QString result = cur_torrens_[index].name_;
+    result += "      ||";
+    for (size_t i = 1; i <= 10; i++) {
+        if (10 * i <= percent) {
+            result += '#';
+        } else {
+            result += " . ";
+        }
+    }
+    result += "|| -- " + QString::number(percent) + '%';
+    return result;
+}
+
+
+// =============================================SLOTS=============================================
 
 void MainWindow::on_action_open_torrent_triggered() {
     OpenTorrentWindow window;
@@ -120,10 +145,17 @@ void MainWindow::on_action_open_torrent_triggered() {
         return;
     }
 
-    cur_torrens_.emplace_back(Torrent(window.path_to_torrent_, window.path_to_save_directory_));
+    int torrent_id = static_cast<int>(cur_torrens_.size());
+    cur_torrens_.emplace_back(Torrent(torrent_id, window.path_to_torrent_, window.path_to_save_directory_));
     QStringList buffer(window.path_to_torrent_);
     ui_->list_cur_torrents->addItems(buffer);
 
+    QThread *thread = new QThread;
+    TorrentClient *torrent_client = new TorrentClient(window.path_to_torrent_, torrent_id);
+    torrent_client->moveToThread(thread);
+    connect(torrent_client, SIGNAL(send_statistic(int, int)), this, SLOT(update_statistic(int, int)));
+    connect(thread, SIGNAL(started()), torrent_client, SLOT(start_load()));
+    thread->start();
 }
 
 
@@ -136,4 +168,16 @@ void MainWindow::on_action_delete_torrent_triggered() {
     }
     ui_->list_cur_torrents->takeItem(row);
     cur_torrens_.erase(cur_torrens_.begin() + row);
+}
+
+
+void MainWindow::update_statistic(int percent, int torrent_id) {
+    int index = find_index(torrent_id);
+    if (index == -1) {
+        return;
+    }
+    assert(index >= 0);
+
+    QString new_text = make_progress(static_cast<size_t>(percent), static_cast<size_t>(index));
+    ui_->list_cur_torrents->item(index)->setText(new_text);
 }

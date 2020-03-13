@@ -27,11 +27,14 @@ CONFIG += c++17
 SOURCES += \
         main.cpp \
         open_torrent_window.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+        torrent_client.cpp
 
 HEADERS += \
         open_torrent_window.h \
-        mainwindow.h
+        mainwindow.h \
+        torrent_client.h \
+        /home/andrey/Документы/cpp_project/HSE-2020-torrent-project/client/include/API.h
 
 FORMS += \
         open_torrent_window.ui \
@@ -44,3 +47,17 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
         resource.qrc
+
+unix:!macx: LIBS += -L$$PWD/../../../../../../../usr/local/lib/ -ltorrent-rasterbar
+
+INCLUDEPATH += $$PWD/../../../../../../../usr/local/include
+DEPENDPATH += $$PWD/../../../../../../../usr/local/include
+
+unix:!macx: PRE_TARGETDEPS += $$PWD/../../../../../../../usr/local/lib/libtorrent-rasterbar.a
+
+unix:!macx: LIBS += -L$$PWD/../../../../../../../usr/lib/x86_64-linux-gnu/ -lboost_system
+
+INCLUDEPATH += $$PWD/../../../../../../../usr/lib/x86_64-linux-gnu
+DEPENDPATH += $$PWD/../../../../../../../usr/lib/x86_64-linux-gnu
+
+unix:!macx: PRE_TARGETDEPS += $$PWD/../../../../../../../usr/lib/x86_64-linux-gnu/libboost_system.a
