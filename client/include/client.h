@@ -11,6 +11,7 @@
 #include <libtorrent/write_resume_data.hpp> // unused
 #include <libtorrent/error_code.hpp>
 #include <libtorrent/torrent_info.hpp>
+#include <libtorrent/extensions/smart_ban.hpp>
 
 class client{
 public:
@@ -22,7 +23,12 @@ public:
 
     lt::torrent_status st;
     lt::add_torrent_params p; // будут дефолтные пока
-    lt::session s;
+    lt::session ses;
+
+    void print_download_log(const lt::torrent_status &ts,
+                            std::pair<long double, std::string> &full,
+                            std::string &remain_time);
 };
+
 
 #endif //HSE_2020_TORRENT_PROJECT_CLIENT_H

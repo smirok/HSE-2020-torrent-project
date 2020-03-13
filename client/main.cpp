@@ -1,5 +1,5 @@
 #include <iostream>
-#include "include/API.h"
+#include "API.h"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
@@ -14,7 +14,7 @@ int main() {
     return 0;
 }
 
-//symbolic link на торрент
+// symbolic link на торрент
 
 // посмотреть библиотеку в ppa
 
