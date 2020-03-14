@@ -3,7 +3,7 @@
 #include "server.hpp"
 
 
-int main(int argc, char *argv[]) {
+int main(/*int argc, char *argv[]*/) {
 
     boost::asio::io_context io_context;
     Server server(io_context, 8001);
