@@ -75,9 +75,15 @@ void Server::start() {
 }
 
 template<typename T>
-void load_value(T &value, const uint8_t *&src) {
-    value = endian_load<T, sizeof(T), order::big>(src);
-    src += sizeof(T);
+void load_value(T &value, const uint8_t *&source) { //only for primitive types (8 bytes or less)
+    value = endian_load<T, sizeof(T), order::big>(source);
+    source += sizeof(T);
+}
+
+template<typename T>
+void store_value(T value, uint8_t *&destination) { //only for primitive types (8 bytes or less)
+    endian_store<T, sizeof(T), order::big>(destination, value);
+    destination += sizeof(T);
 }
 
 Request Server::parse_UDP_request(const std::vector<unsigned char> &message, const udp::endpoint &ep) {
@@ -139,35 +145,22 @@ Request Server::parse_UDP_request(const std::vector<unsigned char> &message, con
 
 std::vector<unsigned char> Server::make_UDP_response(const Response &response) {
     std::vector<unsigned char> packet(1024);
-    unsigned char *iter = packet.data();
+    uint8_t *iter = packet.data();
 
-    store_big_s32(iter, response.action);
-    iter += sizeof(int32_t);
-
-    store_big_s32(iter, response.transaction_id);
-    iter += sizeof(int32_t);
+    store_value(response.action, iter);
+    store_value(response.transaction_id, iter);
 
     if (response.action == 0) {
-        store_big_s32(iter, response.connection_id);
-        iter += sizeof(int64_t);
+        store_value(response.connection_id, iter);
     }
 
     if (response.action == 1) {
-        store_big_s32(iter, response.interval);
-        iter += sizeof(int32_t);
-
-        store_big_s32(iter, response.leechers);
-        iter += sizeof(int32_t);
-
-        store_big_s32(iter, response.seeders);
-        iter += sizeof(int32_t);
-
+        store_value(response.interval, iter);
+        store_value(response.leechers, iter);
+        store_value(response.seeders, iter);
         for (auto &peer : response.peers) {
-            store_big_u32(iter, peer.ip());
-            iter += sizeof(uint32_t);
-
-            store_big_u16(iter, peer.port());
-            iter += sizeof(uint16_t);
+            store_value(peer.ip(), iter);
+            store_value(peer.port(), iter);
         }
     }
 
