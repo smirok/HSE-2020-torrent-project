@@ -74,9 +74,15 @@ void Server::start() {
     }
 }
 
+template<typename T>
+void load_value(T &value, const uint8_t *&src) {
+    value = endian_load<T, sizeof(T), order::big>(src);
+    src += sizeof(T);
+}
+
 Request Server::parse_UDP_request(const std::vector<unsigned char> &message, const udp::endpoint &ep) {
     Request request;
-    const unsigned char *iter = message.data();
+    const uint8_t *iter = message.data();
 
     if (message.size() < 16) { // в константу
         request.correct = false;
@@ -84,14 +90,9 @@ Request Server::parse_UDP_request(const std::vector<unsigned char> &message, con
     }
 
 
-    request.connection_id = load_big_s64(iter);
-    iter += sizeof(int64_t); // можно ли без сдвигов? (скорее всего нет)
-
-    request.action = load_big_s32(iter);
-    iter += sizeof(int32_t);
-
-    request.transaction_id = load_big_s32(iter);
-    iter += sizeof(int32_t);
+    load_value(request.connection_id, iter);
+    load_value(request.action, iter);
+    load_value(request.transaction_id, iter);
 
     if (request.action == 0) { // enum!!!!
         // nothing
@@ -108,28 +109,14 @@ Request Server::parse_UDP_request(const std::vector<unsigned char> &message, con
         request.peer_id = std::string(reinterpret_cast<const char *>(iter), 20);
         iter += 20;
 
-        request.downloaded = load_big_s64(iter);
-        iter += sizeof(int64_t);
-
-        request.left = load_big_s64(iter);
-        iter += sizeof(int64_t);
-
-        request.uploaded = load_big_s64(iter);
-        iter += sizeof(int64_t);
-
-        request.event = load_big_s32(iter);
-        iter += sizeof(int32_t);
-
-        request.ip = load_big_u32(iter);
-        iter += sizeof(uint32_t);
-
-        request.key = load_big_u32(iter);
-        iter += sizeof(int32_t);
-
-        request.num_want = load_big_s32(iter);
-        iter += sizeof(int32_t);
-
-        request.port = load_big_u16(iter);
+        load_value(request.downloaded, iter);
+        load_value(request.left, iter);
+        load_value(request.uploaded, iter);
+        load_value(request.event, iter);
+        load_value(request.ip, iter);
+        load_value(request.key, iter);
+        load_value(request.num_want, iter);
+        load_value(request.port, iter);
     }
 
     if (request.action == 3) {
