@@ -39,8 +39,8 @@ bool Peer::operator<(const Peer &other) const noexcept {
         return port() < other.port();
 }
 
-Torrent::Torrent(std::string hash) :
-        hash_(std::move(hash)),
+Torrent::Torrent(const std::array<uint8_t, 20> &hash) :
+        hash_(hash),
         seeders_(),
         leechers_(),
         downloads_(0) {}
@@ -50,12 +50,12 @@ Server::Server(boost::asio::io_context &io_context, int16_t port) :
 
 void Server::start() {
     for (;;) {
-        std::vector<unsigned char> message(max_length);
+        std::vector<uint8_t> message(max_length);
         udp::endpoint sender_endpoint;
         std::cout << "receiving message\n";
-        size_t length = socket_.receive_from(boost::asio::buffer(message), sender_endpoint);
+        size_t message_length = socket_.receive_from(boost::asio::buffer(message), sender_endpoint);
+        message.resize(message_length);
         std::cout << "got it\n";
-        message.resize(length); //? чёт тупо
         Request request = parse_UDP_request(message, sender_endpoint);
         Response response = Response();
         if (!request.correct)
@@ -70,7 +70,7 @@ void Server::start() {
             continue;
         }
         std::cout << "sending response to " << response.sender.ep().address().to_string() << ' ' << response.sender.port() << '\n';
-        socket_.send_to(boost::asio::buffer(make_UDP_response(response)), response.sender.ep());
+        socket_.send_to(boost::asio::buffer(make_UDP_response(response), message_length), response.sender.ep());
     }
 }
 
@@ -80,13 +80,19 @@ void load_value(T &value, const uint8_t *&source) { //only for primitive types (
     source += sizeof(T);
 }
 
+template<>
+void load_value(std::array<uint8_t, 20> &value, const uint8_t *&source) {
+    std::copy(source, source + sizeof(value), value.data());
+    source += sizeof(value);
+}
+
 template<typename T>
 void store_value(T value, uint8_t *&destination) { //only for primitive types (8 bytes or less)
     endian_store<T, sizeof(T), order::big>(destination, value);
     destination += sizeof(T);
 }
 
-Request Server::parse_UDP_request(const std::vector<unsigned char> &message, const udp::endpoint &ep) {
+Request Server::parse_UDP_request(const std::vector<uint8_t> &message, const udp::endpoint &ep) {
     Request request;
     const uint8_t *iter = message.data();
 
@@ -109,12 +115,10 @@ Request Server::parse_UDP_request(const std::vector<unsigned char> &message, con
             return request;
         }
 
-        request.info_hashes.emplace_back(reinterpret_cast<const char *>(iter), 20);
-        iter += 20; // в константу
+        request.info_hashes.emplace_back();
+        load_value(request.info_hashes.back(), iter);
 
-        request.peer_id = std::string(reinterpret_cast<const char *>(iter), 20);
-        iter += 20;
-
+        load_value(request.peer_id, iter);
         load_value(request.downloaded, iter);
         load_value(request.left, iter);
         load_value(request.uploaded, iter);
@@ -125,7 +129,7 @@ Request Server::parse_UDP_request(const std::vector<unsigned char> &message, con
         load_value(request.port, iter);
     }
 
-    if (request.action == 3) {
+    if (request.action == 2) {
         size_t bytes_left = message.size() - 16; // константаааа
         if (bytes_left == 0 || bytes_left % 20 != 0) {
             request.correct = false;
@@ -133,8 +137,8 @@ Request Server::parse_UDP_request(const std::vector<unsigned char> &message, con
         }
 
         while (bytes_left > 0) {
-            request.info_hashes.emplace_back(reinterpret_cast<const char *>(iter), 20);
-            iter += 20;
+            request.info_hashes.emplace_back();
+            load_value(request.info_hashes.back(), iter);
             bytes_left -= 20;
         }
     }
@@ -143,8 +147,8 @@ Request Server::parse_UDP_request(const std::vector<unsigned char> &message, con
     return request;
 }
 
-std::vector<unsigned char> Server::make_UDP_response(const Response &response) {
-    std::vector<unsigned char> packet(1024);
+std::vector<uint8_t> Server::make_UDP_response(const Response &response) {
+    std::vector<uint8_t> packet(1024);
     uint8_t *iter = packet.data();
 
     store_value(response.action, iter);
