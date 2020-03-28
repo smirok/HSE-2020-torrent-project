@@ -5,7 +5,6 @@
 
 /* enum-ы, константы, конфиг?? (как его делатб)
  *
- * Сделать handle_scrape
  * Сделать отчёт об ошибках и его отправку
  *
  * Сделать фабрику запросов и ответов (три вида запросов, четыре вида ответов)
@@ -60,16 +59,20 @@ void Server::start() {
         Response response = Response();
         if (!request.correct)
             continue; // should send error response
-        if (request.action == 0) { // enum
-            response = handle_connect(request);
-        } else
-        if (request.action == 1) {
-            response = handle_announce(request);
-        } else {
-            /*TODO*/
-            continue;
+        switch (request.action) {
+            case 0:
+                response = handle_connect(request);
+                break;
+            case 1:
+                response = handle_announce(request);
+                break;
+            case 2:
+                response = handle_scrape(request);
+                break;
+            default:
+                break;
         }
-        std::cout << "sending response to " << response.sender.ep().address().to_string() << ' ' << response.sender.port() << '\n';
+        std::cout << "sending response "  << response.action << " to " << response.sender.ep().address().to_string() << ' ' << response.sender.port() << '\n';
         socket_.send_to(boost::asio::buffer(make_UDP_response(response), message_length), response.sender.ep());
     }
 }
@@ -148,7 +151,7 @@ Request Server::parse_UDP_request(const std::vector<uint8_t> &message, const udp
 }
 
 std::vector<uint8_t> Server::make_UDP_response(const Response &response) {
-    std::vector<uint8_t> packet(1024);
+    std::vector<uint8_t> packet(max_length);
     uint8_t *iter = packet.data();
 
     store_value(response.action, iter);
@@ -169,7 +172,11 @@ std::vector<uint8_t> Server::make_UDP_response(const Response &response) {
     }
 
     if (response.action == 2) {
-        /*TODO scrape*/
+        for (const auto &info : response.scrape_info) {
+            store_value(info.complete, iter);
+            store_value(info.downloaded, iter);
+            store_value(info.incomplete, iter);
+        }
     }
 
     if (response.action == 3) {
@@ -183,7 +190,6 @@ std::vector<uint8_t> Server::make_UDP_response(const Response &response) {
 Response Server::handle_connect(const Request &request) {
     Response response;
 
-    //тупо
     response.action = request.action; //  == 0
     response.transaction_id = request.transaction_id;
     response.connection_id = request.connection_id;
@@ -195,12 +201,14 @@ Response Server::handle_connect(const Request &request) {
 Response Server::handle_announce(const Request &request) {
     Response response;
 
-    response.action = 1; // const
+    response.action = 1; // enum
     response.transaction_id = request.transaction_id;
-    response.interval = 200; // естественно в константу
+    response.interval = 120; // естественно в константу
+    response.sender = request.sender;
 
-    if (torrents_.find(request.info_hashes[0]) == torrents_.end())
+    if (torrents_.find(request.info_hashes[0]) == torrents_.end()) {
         torrents_[request.info_hashes[0]] = Torrent(request.info_hashes[0]);
+    }
 
     auto &seeders_set  = torrents_[request.info_hashes[0]].seeders_;
     auto &leechers_set = torrents_[request.info_hashes[0]].leechers_;
@@ -208,11 +216,13 @@ Response Server::handle_announce(const Request &request) {
     response.leechers = leechers_set.size();
     response.seeders  = seeders_set.size();
     //incorrect, should use num_want ->
-    for (const auto& peer : seeders_set)
+    for (const auto& peer : seeders_set) {
         response.peers.push_back(peer);
+    }
     //incorrect, should use num_want ->
-    for (const auto& peer : leechers_set)
+    for (const auto& peer : leechers_set) {
         response.peers.push_back(peer);
+    }
 
     if (request.event == 0) { //enum-чики
         //nothing
@@ -228,7 +238,28 @@ Response Server::handle_announce(const Request &request) {
         leechers_set.erase(request.sender);
         seeders_set.erase(request.sender);
     }
-    response.sender = request.sender;
 
     return response;
 }
+
+Response Server::handle_scrape(const Request &request) {
+    Response response;
+
+    response.action = 2; // enum
+    response.transaction_id = request.transaction_id;
+    response.sender = request.sender;
+
+    for (const auto &cur_info_hash : request.info_hashes) {
+        if (torrents_.find(cur_info_hash) == torrents_.end()) {
+            torrents_[cur_info_hash] = Torrent(cur_info_hash);
+        }
+
+        response.scrape_info.emplace_back();
+        response.scrape_info.back().complete   = torrents_[cur_info_hash].seeders_.size();
+        response.scrape_info.back().downloaded = torrents_[cur_info_hash].downloads_;
+        response.scrape_info.back().incomplete = torrents_[cur_info_hash].leechers_.size();
+    }
+
+    return response;
+}
+
