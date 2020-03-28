@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 #include "open_torrent_window.h"
 
-
 #include <iostream>
 #include <vector>
 #include <cassert>
@@ -12,9 +11,12 @@
 #include <QJsonObject>
 #include <QDebug>
 #include <QFile>
+#include <QFileInfo>
 
 
 // =============================================JSON=============================================
+
+// TODO -- maybe, i need to create a separate class for working with JSON
 
 void MainWindow::read_database(QString file_name) {
     QFile file(file_name);
@@ -23,11 +25,31 @@ void MainWindow::read_database(QString file_name) {
     QJsonObject json(doc.object());
 
     int count_torrent = json["count"].toString().toInt();
-
     for (int i = 0; i < count_torrent; i++) {
         QString id = QString::number(i);
+
         QString name = json[id].toObject()["name"].toString();
+        QFileInfo torrent_file(name);
+        if (!torrent_file.isFile() || torrent_file.suffix().toStdString() != "torrent") {
+            std::cout << "WARNING: This is not a torrent file -- " << name.toStdString() << std::endl;
+            continue;
+        }
+        if (!torrent_file.isReadable()) {
+            std::cout << "WARNING: This is not a readable file -- " << name.toStdString() << std::endl;
+            continue;
+        }
+
         QString location = json[id].toObject()["location"].toString();
+        QFileInfo save_directory(location);
+        if (!save_directory.isDir()) {
+            std::cout << "WARNING: This is not a directory -- " << location.toStdString() << std::endl;
+            continue;
+        }
+        if (!save_directory.isWritable()) {
+            std::cout << "WARNING: This is not a writable directory -- " << location.toStdString() << std::endl;
+            continue;
+        }
+
         cur_torrens_.emplace_back(Torrent(i, name, location));
         ui_->list_cur_torrents->addItem(name);
     }
@@ -61,7 +83,7 @@ bool MainWindow::check_database(QString file_name) {
     // checking the count-parameter
     if (json["count"].isNull()) {
         return false;
-   }
+    }
     QString buffer = json["count"].toString();
     for (auto e : buffer) {
         if (e < '0' || '9' < e) {
@@ -80,10 +102,10 @@ bool MainWindow::check_database(QString file_name) {
     for (int i = 0; i < count_torrent; i++) {
         QString id = QString::number(i);
         auto buffer = json[id].toObject();
-        if (buffer["name"].isNull()) {                         // Add to check the correctness for path to torrent file
+        if (buffer["name"].isNull()) {
            return false;
         }
-        if (buffer["location"].isNull()) {                     // Add to check the correctness for path to save directory
+        if (buffer["location"].isNull()) { 
            return false;
         }
     }
@@ -168,6 +190,8 @@ void MainWindow::on_action_delete_torrent_triggered() {
     }
     ui_->list_cur_torrents->takeItem(row);
     cur_torrens_.erase(cur_torrens_.begin() + row);
+
+    // TODO -- add deleting thread
 }
 
 

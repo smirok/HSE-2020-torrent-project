@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>TorrentX</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -34,6 +34,7 @@
      <string>File</string>
     </property>
     <addaction name="action_open_torrent"/>
+    <addaction name="action_create_torrent"/>
     <addaction name="action_delete_torrent"/>
    </widget>
    <addaction name="menuCreate"/>
@@ -46,6 +47,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="action_open_torrent"/>
+   <addaction name="action_create_torrent"/>
    <addaction name="action_delete_torrent"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -65,6 +67,15 @@
    </property>
    <property name="text">
     <string>Delete</string>
+   </property>
+  </action>
+  <action name="action_create_torrent">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resource/img/create_torrent.png</normaloff>:/resource/img/create_torrent.png</iconset>
+   </property>
+   <property name="text">
+    <string>Create</string>
    </property>
   </action>
  </widget>

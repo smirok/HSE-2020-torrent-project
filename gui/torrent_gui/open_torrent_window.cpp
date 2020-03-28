@@ -1,11 +1,11 @@
 #include "open_torrent_window.h"
 #include "ui_open_torrent_window.h"
 
+#include <iostream>
 
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QDir>
-#include <iostream>
+#include <QFileInfo>
 
 
 OpenTorrentWindow::OpenTorrentWindow(QWidget *parent) : QDialog(parent), ui_(new Ui::OpenTorrentWindow) {
@@ -34,15 +34,22 @@ void OpenTorrentWindow::on_add_torrent_button_clicked() {
     path_to_torrent_ = ui_->torrent_line->text();
     path_to_save_directory_ = ui_->directory_line->text();
 
-    QFile file(path_to_torrent_);
-    if (!file.exists()) {
-        QMessageBox::warning(this, "Wrong path", "Torrent file doesn't exist");
+    QFileInfo torrent_file(path_to_torrent_);
+    if (!torrent_file.isFile() || torrent_file.suffix().toStdString() != "torrent") {
+        QMessageBox::warning(this, "WARNING", "This is not a torrent file");
         return;
     }
+    if (!torrent_file.isReadable()) {
+        QMessageBox::warning(this, "WARNING", "This is not a readable file");
+    }
 
-    QDir save_directory(path_to_save_directory_);
-    if (!save_directory.exists()) {
-        QMessageBox::warning(this, "Wrong path", "Save directory doesn't exist");
+    QFileInfo save_directory(path_to_save_directory_);
+    if (!save_directory.isDir()) {
+        QMessageBox::warning(this, "WARNING", "This is not a directory");
+        return;
+    }
+    if (!save_directory.isWritable()) {
+        QMessageBox::warning(this, "WARNING", "This is not a writable directory");
         return;
     }
 

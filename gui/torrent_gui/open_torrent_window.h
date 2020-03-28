@@ -18,7 +18,7 @@ public:
     explicit OpenTorrentWindow(QWidget *parent = nullptr);
     ~OpenTorrentWindow();
 
-    QString path_to_torrent_ = "";
+    QString path_to_torrent_ = "";                                  // TODO -- maybe these variables are not public
     QString path_to_save_directory_ = "";
     bool data_is_read_ = false;
 
