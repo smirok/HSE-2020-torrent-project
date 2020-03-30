@@ -10,4 +10,4 @@ add_executable(server
         src/main.cpp
         src/server.cpp
         include/server.hpp)
-target_link_libraries(server boost_system boost_thread pthread)
+target_link_libraries(server pthread)

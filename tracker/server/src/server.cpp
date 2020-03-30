@@ -53,12 +53,12 @@ namespace UDP_server {
             udp::endpoint sender_endpoint;
             std::cout << "receiving message\n";
             size_t message_length = socket_.receive_from(boost::asio::buffer(message), sender_endpoint);
-            message.resize(message_length);
+            message.resize(message_length);//?
             std::cout << "got it\n";
             Request request = parse_UDP_request(message, sender_endpoint);
-            Response response = Response();
-            if (!request.correct)
-                continue; // should send error response
+            Response response;
+            if (!request.is_correct)
+                request.action = ActionType ::ERROR;
             switch (request.action) {
                 case ActionType::CONNECT:
                     response = handle_connect(request);
@@ -70,6 +70,7 @@ namespace UDP_server {
                     response = handle_scrape(request);
                     break;
                 case ActionType::ERROR:
+                    response = handle_error(request);
                     break;
             }
             std::cout << "sending response " << static_cast<int>(response.action)
@@ -102,13 +103,17 @@ namespace UDP_server {
         const uint8_t *iter = message.data();
 
         if (message.size() < 16) { // в константу
-            request.correct = false;
+            request.is_correct = false;
             return request;
         }
 
 
         load_value(request.connection_id, iter);
-        load_value(request.action, iter);//?????????????
+        load_value(request.action, iter);
+        if (ActionType::CONNECT > request.action || request.action > ActionType::ERROR) {
+            request.is_correct = false;
+            return request;
+        }
         load_value(request.transaction_id, iter);
 
         if (request.action == ActionType::CONNECT) {
@@ -116,7 +121,7 @@ namespace UDP_server {
         }
         if (request.action == ActionType::ANNOUNCE) {
             if (message.size() < 98) {
-                request.correct = false;
+                request.is_correct = false;
                 return request;
             }
 
@@ -127,7 +132,11 @@ namespace UDP_server {
             load_value(request.downloaded, iter);
             load_value(request.left, iter);
             load_value(request.uploaded, iter);
-            load_value(request.event, iter);//????????????????????
+            load_value(request.event, iter);
+            if (EventType::NONE > request.event || request.event > EventType::STOPPED) {
+                request.is_correct = false;
+                return request;
+            }
             load_value(request.ip, iter);
             load_value(request.key, iter);
             load_value(request.num_want, iter);
@@ -137,7 +146,7 @@ namespace UDP_server {
         if (request.action == ActionType::SCRAPE) {
             size_t bytes_left = message.size() - 16; // константаааа
             if (bytes_left == 0 || bytes_left % HASH_SIZE != 0) {
-                request.correct = false;
+                request.is_correct = false;
                 return request;
             }
 
@@ -156,7 +165,7 @@ namespace UDP_server {
         std::vector<uint8_t> packet(PACKET_SIZE);
         uint8_t *iter = packet.data();
 
-        store_value(response.action, iter);//???????????
+        store_value(response.action, iter);
         store_value(response.transaction_id, iter);
 
         if (response.action == ActionType::CONNECT) {
@@ -167,7 +176,7 @@ namespace UDP_server {
             store_value(response.interval, iter);
             store_value(response.leechers, iter);
             store_value(response.seeders, iter);
-            for (auto &peer : response.peers) {
+            for (const auto &peer : response.peers) {
                 store_value(peer.ip(), iter);
                 store_value(peer.port(), iter);
             }
@@ -182,7 +191,9 @@ namespace UDP_server {
         }
 
         if (response.action == ActionType::ERROR) {
-            /*TODO error*/
+            for (const auto &symbol : response.error_message) {
+                store_value(symbol, iter);
+            }
         }
 
         packet.resize(iter - packet.data());//?
@@ -260,6 +271,17 @@ namespace UDP_server {
             response.scrape_info.back().downloaded = torrents_[cur_info_hash].downloads_;
             response.scrape_info.back().incomplete = torrents_[cur_info_hash].leechers_.size();
         }
+
+        return response;
+    }
+
+    Response Server::handle_error(const Request &request) {
+        Response response;
+        response.action = ActionType::ERROR; //  == 2
+        response.transaction_id = request.transaction_id;
+        response.sender = request.sender;
+
+        response.error_message = "Bad request";
 
         return response;
     }

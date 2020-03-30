@@ -13,29 +13,20 @@ namespace UDP_server {
     class Peer {
     public:
         Peer() = default;
-
         explicit Peer(udp::endpoint endpoint);
-
-        ~Peer() = default;
-
         uint32_t ip() const noexcept;
-
         uint16_t port() const noexcept;
-
         udp::endpoint ep() const noexcept;
-
         bool operator<(const Peer &other) const noexcept; // для std::set
     private:
         udp::endpoint endpoint_;
         std::array<uint8_t, HASH_SIZE> peer_id_{};
     };
 
-    class Torrent { //?
+    class Torrent {
     public:
         Torrent() = default;
-
         explicit Torrent(const std::array<uint8_t, HASH_SIZE> &hash);
-
         std::array<uint8_t, HASH_SIZE> hash_{};
         std::set<Peer> seeders_;
         std::set<Peer> leechers_;
@@ -69,7 +60,7 @@ namespace UDP_server {
         uint16_t port;
 
         Peer sender;
-        bool correct = true;
+        bool is_correct = true;
     };
 
     struct Response {
@@ -93,25 +84,21 @@ namespace UDP_server {
         std::vector<Scrape> scrape_info;
 
         //action == 3
-        std::string error;
+        std::string error_message;
 
         Peer sender;
     };
 
     class Server {
     public:
-        explicit Server(boost::asio::io_context &io_context, int16_t port = 8000); //сделать приватным?
+        explicit Server(boost::asio::io_context &io_context, int16_t port = 8000);
         void start();
-
         static Request parse_UDP_request(const std::vector<uint8_t> &message, const udp::endpoint &ep);
-
-        static std::vector<uint8_t> make_UDP_response(const Response &response); // optional??
-        static Response handle_connect(const Request &request);
-
+        static std::vector<uint8_t> make_UDP_response(const Response &response);
+        Response handle_connect(const Request &request);
         Response handle_announce(const Request &request);
-
         Response handle_scrape(const Request &request);
-        //Response handle_error(const Request &request);
+        Response handle_error(const Request &request);
     private:
         udp::socket socket_;
         std::map<std::array<uint8_t, HASH_SIZE>, Torrent> torrents_;
