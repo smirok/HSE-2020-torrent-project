@@ -30,6 +30,7 @@ namespace UDP_server {
         std::array<uint8_t, HASH_SIZE> hash_{};
         std::set<Peer> seeders_;
         std::set<Peer> leechers_;
+        //может вообще хранить один set  и сортировать по кол-ву скачанный байт?
         size_t downloads_ = 0;
     };
 
