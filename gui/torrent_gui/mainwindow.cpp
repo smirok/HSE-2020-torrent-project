@@ -136,6 +136,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainW
     if (check_database("save.json")) {
         read_database("save.json");
     }
+    ui_->list_cur_torrents->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui_->list_cur_torrents, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(show_context_menu(QPoint)));
 }
 
 
@@ -202,8 +204,6 @@ void MainWindow::on_action_delete_torrent_triggered() {
     }
     ui_->list_cur_torrents->takeItem(row);
     cur_torrens_.erase(cur_torrens_.begin() + row);
-
-    // TODO -- add deleting thread
 }
 
 
@@ -227,4 +227,12 @@ void MainWindow::update_statistic(int percent, int torrent_id) {
     auto *item = ui_->list_cur_torrents->item(index);
     item->setSizeHint(w->sizeHint());
     ui_->list_cur_torrents->setItemWidget(item, w);
+}
+
+
+void MainWindow::show_context_menu(const QPoint &pos) {
+    QPoint point = ui_->list_cur_torrents->mapToGlobal(pos);
+    QMenu menu;
+    menu.addAction("Delete",  this, SLOT(on_action_delete_torrent_triggered()));
+    menu.exec(point);
 }

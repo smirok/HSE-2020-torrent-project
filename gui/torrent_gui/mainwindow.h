@@ -33,6 +33,7 @@ private slots:
     void on_action_open_torrent_triggered();
     void on_action_delete_torrent_triggered();
     void update_statistic(int percent, int torrent_id);
+    void show_context_menu(const QPoint &point);
 
 private:
     Ui::MainWindow *ui_;
