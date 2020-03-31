@@ -24,17 +24,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++17
 
-INCLUDEPATH += /home/andrey/Документы/cpp_project/HSE-2020-torrent-project/client/include
-
 SOURCES += \
         main.cpp \
         open_torrent_window.cpp \
         mainwindow.cpp \
         torrent_client.cpp \
-        /home/andrey/Документы/cpp_project/HSE-2020-torrent-project/client/source/API.cpp \
-        /home/andrey/Документы/cpp_project/HSE-2020-torrent-project/client/source/client.cpp \
-        /home/andrey/Документы/cpp_project/HSE-2020-torrent-project/client/source/info_helper.cpp \
-        /home/andrey/Документы/cpp_project/HSE-2020-torrent-project/client/source/make_torrent.cpp
 
 HEADERS += \
         open_torrent_window.h \

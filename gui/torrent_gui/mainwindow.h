@@ -13,7 +13,6 @@ struct Torrent {
     int id_;
     QString name_;
     QString locate_;
-    // ...
 };
 
 
@@ -44,7 +43,6 @@ private:
     bool check_database(QString file_name);
 
     int find_index(int torrent_id);
-    QString make_progress(size_t percent, size_t index);
 
 };
 

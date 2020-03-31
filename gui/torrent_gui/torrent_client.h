@@ -1,6 +1,5 @@
 #pragma once
 
-#include "API.h"
 
 #include <QObject>
 #include <QString>
@@ -21,7 +20,6 @@ signals:
     void send_statistic(int, int);
 
 private:
-    API api_;
     QString file_name_ = {};
     int id_;
     int other_ = 0;

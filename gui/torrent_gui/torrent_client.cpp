@@ -1,5 +1,5 @@
 #include "torrent_client.h"
-#include "API.h"
+// #include "API.h"
 
 
 #include <QThread>
@@ -19,9 +19,9 @@ void TorrentClient::start_load() {
 //    api_.enter_file(buffer);
 //    api_.start_download();
 //    std::cout << "hello fucking world" << std::endl;
-    for (int i = 0; i <= 100; i += 10) {
+    for (int i = 0; i <= 100; i++) {
         emit send_statistic(i, id_);
-        QThread::sleep(7);
+        QThread::sleep(1);
     }
 }
 

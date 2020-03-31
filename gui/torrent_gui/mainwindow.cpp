@@ -6,17 +6,18 @@
 #include <vector>
 #include <cassert>
 
+#include <QWidget>
 #include <QMessageBox>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
 #include <QFile>
 #include <QFileInfo>
+#include <QLabel>
+#include <QProgressBar>
 
 
 // =============================================JSON=============================================
-
-// TODO -- maybe, i need to create a separate class for working with JSON
 
 void MainWindow::read_database(QString file_name) {
     QFile file(file_name);
@@ -50,8 +51,22 @@ void MainWindow::read_database(QString file_name) {
             continue;
         }
 
+        auto *w = new QWidget();
+        auto *vbl = new QHBoxLayout();
+        auto *label = new QLabel(name);
+        auto *progress = new QProgressBar();
+        progress->setValue(100);
+        vbl->addWidget(label);
+        vbl->addWidget(progress);
+        vbl->setSizeConstraint( QLayout::SetFixedSize );
+        w->setLayout(vbl);
+
+        QListWidgetItem *item = new QListWidgetItem;
+        item->setSizeHint(w->sizeHint());
+
         cur_torrens_.emplace_back(Torrent(i, name, location));
-        ui_->list_cur_torrents->addItem(name);
+        ui_->list_cur_torrents->addItem(item);
+        ui_->list_cur_torrents->setItemWidget(item, w);
     }
 }
 
@@ -141,21 +156,6 @@ int MainWindow::find_index(int torrent_id) {
 }
 
 
-QString MainWindow::make_progress(size_t percent, size_t index) {
-    QString result = cur_torrens_[index].name_;
-    result += "      ||";
-    for (size_t i = 1; i <= 10; i++) {
-        if (10 * i <= percent) {
-            result += '#';
-        } else {
-            result += " . ";
-        }
-    }
-    result += "|| -- " + QString::number(percent) + '%';
-    return result;
-}
-
-
 // =============================================SLOTS=============================================
 
 void MainWindow::on_action_open_torrent_triggered() {
@@ -169,8 +169,20 @@ void MainWindow::on_action_open_torrent_triggered() {
 
     int torrent_id = static_cast<int>(cur_torrens_.size());
     cur_torrens_.emplace_back(Torrent(torrent_id, window.path_to_torrent_, window.path_to_save_directory_));
-    QStringList buffer(window.path_to_torrent_);
-    ui_->list_cur_torrents->addItems(buffer);
+
+    auto *w = new QWidget();
+    auto *vbl = new QHBoxLayout();
+    auto *label = new QLabel(window.path_to_torrent_);
+    auto *progress = new QProgressBar();
+    progress->setValue(0);
+    vbl->addWidget(label);
+    vbl->addWidget(progress);
+    vbl->setSizeConstraint( QLayout::SetFixedSize );
+    w->setLayout(vbl);
+    QListWidgetItem *item = new QListWidgetItem;
+    item->setSizeHint(w->sizeHint());
+    ui_->list_cur_torrents->addItem(item);
+    ui_->list_cur_torrents->setItemWidget(item, w);
 
     QThread *thread = new QThread;
     TorrentClient *torrent_client = new TorrentClient(window.path_to_torrent_, torrent_id);
@@ -202,6 +214,17 @@ void MainWindow::update_statistic(int percent, int torrent_id) {
     }
     assert(index >= 0);
 
-    QString new_text = make_progress(static_cast<size_t>(percent), static_cast<size_t>(index));
-    ui_->list_cur_torrents->item(index)->setText(new_text);
+    auto *w = new QWidget();
+    auto *vbl = new QHBoxLayout();
+    auto *label = new QLabel(cur_torrens_[static_cast<size_t>(index)].name_);
+    auto *progress = new QProgressBar();
+    progress->setValue(percent);
+    vbl->addWidget(label);
+    vbl->addWidget(progress);
+    vbl->setSizeConstraint( QLayout::SetFixedSize );
+    w->setLayout(vbl);
+
+    auto *item = ui_->list_cur_torrents->item(index);
+    item->setSizeHint(w->sizeHint());
+    ui_->list_cur_torrents->setItemWidget(item, w);
 }
