@@ -9,6 +9,8 @@ namespace UDP_server {
     using boost::asio::ip::udp;
     constexpr std::size_t PACKET_SIZE = 1024;
     constexpr std::size_t HASH_SIZE = 20;
+    constexpr std::size_t CONNECT_REQUEST_SIZE = 16;
+    constexpr std::size_t ANNOUNCE_REQUEST_SIZE = 98;
 
     class Peer {
     public:
@@ -61,7 +63,7 @@ namespace UDP_server {
         uint16_t port;
 
         Peer sender;
-        bool is_correct = true;
+        std::string error_message;
     };
 
     struct Response {
@@ -92,7 +94,10 @@ namespace UDP_server {
 
     class Server {
     public:
-        explicit Server(boost::asio::io_context &io_context, int16_t port = 8000);
+        explicit Server(boost::asio::io_context &io_context,
+                        uint16_t port,
+                        int32_t request_interval,
+                        bool silent_mode);
         void start();
         static Request parse_UDP_request(const std::vector<uint8_t> &message, const udp::endpoint &ep);
         static std::vector<uint8_t> make_UDP_response(const Response &response);
@@ -102,6 +107,8 @@ namespace UDP_server {
         Response handle_error(const Request &request);
     private:
         udp::socket socket_;
+        int32_t request_interval_;
+        bool silent_mode_;
         std::map<std::array<uint8_t, HASH_SIZE>, Torrent> torrents_;
     };
 } //namespace UDP_server
