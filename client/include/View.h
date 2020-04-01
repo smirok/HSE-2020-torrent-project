@@ -5,16 +5,23 @@
 #include "libtorrent/fwd.hpp"
 #include "libtorrent/torrent_status.hpp"
 
-class View{
+class View {
 
 
-    // ключ - торрент, значение - хэш
 public:
+    // ключ - торрент, значение - хэш
+    void updateTorrents(std::vector<lt::torrent_status> st);
+
+    lt::torrent_status &getTorrent(const std::string &);
+
+    void updateCurrentTorrents();
+
     std::unordered_map<std::string, lt::sha1_hash> torrent_to_hash;
+
+    std::vector<lt::torrent_status const *> current_handles;
+    std::unordered_map<lt::torrent_handle, lt::torrent_status> session_handles;
+    std::unordered_map<std::string, lt::torrent_handle> converter;
 private:
-    std::unordered_map<lt::torrent_handle,lt::torrent_status> session_handles;
-    std::vector<lt::torrent_handle> current_handles;
-    std::unordered_map<std::string,lt::torrent_handle> converter;
 };
 
 #endif //HSE_2020_TORRENT_PROJECT_VIEW_H

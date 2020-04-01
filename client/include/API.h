@@ -4,23 +4,46 @@
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
-#include "client.h"
+#include <libtorrent/session.hpp>
+#include "View.h"
+#include "InfoHelper.h"
 #include <iostream>
 #include <unordered_map>
 
-class API{
+class API {
 public:
-    void enter_file(const std::string& file);
-    void enter_dir(const std::string& path);
+    API();
 
-    void pause_download(std::string& file_name);
-    void resume_download(std::string& file_name);
+    void createDownload(const std::string &file_name, const std::string &path); // после конца надо удалить из вектора
 
-    void remove_download(std::string& file_name);
+    void pauseDownload(const std::string &file_name);
 
-    void start_download();
-    client cl;
-    std::unordered_map <std::string, lt::sha1_hash> torrent_to_hash; // ключ - торрент, значение - хэш
+    void resumeDownload(const std::string &file_name);
+
+    void removeDownload(const std::string &file_name);
+
+    void takeUpdates(int query_type, const std::string &file_name = "",
+                     const std::string &path = ""); // потом сделать через шаблоны
+
+    void parseUpdates();
+
+    void startDownload();
+
+    void setPath(const std::string &path);
+
+    void setFile(const std::string &file_name);
+
+    TorrentInfo getInfo(const std::string &file_name);
+
+    View view;
+private:
+    int query_type_ = 0;
+    std::string file_name_;
+    std::string path_;
+
+    InfoHelper ih;
+    lt::add_torrent_params p;
+    lt::session ses;
 };
 
 

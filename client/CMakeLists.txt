@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-add_executable(client main.cpp source/info_helper.cpp include/info_helper.h source/API.cpp include/API.h source/client.cpp include/client.h)
+add_executable(client main.cpp source/InfoHelper.cpp include/InfoHelper.h source/API.cpp include/API.h
+        source/View.cpp include/View.h)
 add_executable(tmaker source/make_torrent.cpp include/make_torrent.h)
 
 target_link_libraries(client torrent-rasterbar boost_system)
