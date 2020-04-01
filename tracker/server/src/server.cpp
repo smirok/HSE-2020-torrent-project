@@ -224,7 +224,7 @@ namespace UDP_server {
         response.transaction_id = request.transaction_id;
         response.sender = request.sender;
 
-        response.interval = 120; // естественно в константу
+        response.interval = request_interval_;
 
         if (torrents_.find(request.info_hashes[0]) == torrents_.end()) {
             torrents_[request.info_hashes[0]] = Torrent(request.info_hashes[0]);
