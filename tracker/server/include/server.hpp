@@ -105,6 +105,8 @@ namespace UDP_server {
         Response handle_announce(const Request &request);
         Response handle_scrape(const Request &request);
         Response handle_error(const Request &request);
+        void print_request(const Request &request);
+        void print_response(const Response &response);
     private:
         udp::socket socket_;
         int32_t request_interval_;

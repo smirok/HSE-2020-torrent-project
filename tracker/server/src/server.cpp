@@ -1,7 +1,6 @@
-#include "server.hpp"
-
-#include <utility>
 #include <boost/endian/conversion.hpp>
+
+#include "server.hpp"
 
 /* константы, конфиг?? (как его делатб)
  *
@@ -59,11 +58,8 @@ namespace UDP_server {
             size_t message_length = socket_.receive_from(boost::asio::buffer(message), sender_endpoint);
             message.resize(message_length);//?
             Request request = parse_UDP_request(message, sender_endpoint);
-            if (!silent_mode_) {
-                std::cout << "request " << static_cast<int>(request.action)
-                          << " from " << request.sender.ep().address().to_string()
-                          << ' ' << request.sender.port() << '\n';
-            }
+            print_request(request);
+
             Response response = Response();
 
             if (!request.error_message.empty()) {
@@ -78,11 +74,9 @@ namespace UDP_server {
             if (request.action == ActionType::SCRAPE) {
                 response = handle_scrape(request);
             }
-            if (!silent_mode_) {
-                std::cout << "send response " << static_cast<int>(response.action)
-                          << " to " << response.sender.ep().address().to_string()
-                          << ' ' << response.sender.port() << '\n';
-            }
+
+            print_response(response);
+
             socket_.send_to(boost::asio::buffer(make_UDP_response(response), message_length), response.sender.ep());
         }
     }
@@ -291,5 +285,77 @@ namespace UDP_server {
         response.error_message = request.error_message;
 
         return response;
+    }
+
+    void Server::print_request(const Request &request) {
+        if (silent_mode_) {
+            return;
+        }
+        std::stringstream info_message;
+
+        info_message << "REQUEST action=";
+        switch (request.action) {
+            case ActionType::CONNECT:
+                info_message << "Connect ";
+                break;
+            case ActionType::ANNOUNCE:
+                info_message << "Announce ";
+                break;
+            case ActionType::SCRAPE:
+                info_message << "Scrape ";
+                break;
+            case ActionType::ERROR:
+                info_message << "Error ";
+                break;
+        }
+
+        if (request.action == ActionType::ANNOUNCE) {
+            info_message << "event=";
+            switch (request.event) {
+                case EventType::NONE:
+                    info_message << "None ";
+                    break;
+                case EventType::COMPLETED:
+                    info_message << "Completed ";
+                    break;
+                case EventType::STARTED:
+                    info_message << "Started ";
+                    break;
+                case EventType::STOPPED:
+                    info_message << "Stopped ";
+                    break;
+            }
+        }
+        info_message << " from " << request.sender.ep().address().to_string()
+                     << " " << request.sender.port() << '\n';
+
+        std::cout << info_message.str();
+    }
+
+    void Server::print_response(const Response &response) {
+        if (silent_mode_) {
+            return;
+        }
+        std::stringstream info_message;
+        info_message << "RESPONSE action=";
+        switch (response.action) {
+            case ActionType::CONNECT:
+                info_message << "Connect ";
+                break;
+            case ActionType::ANNOUNCE:
+                info_message << "Announce ";
+                break;
+            case ActionType::SCRAPE:
+                info_message << "Scrape ";
+                break;
+            case ActionType::ERROR:
+                info_message << "Error ";
+                break;
+        }
+
+        info_message << " to " << response.sender.ep().address().to_string()
+                     << " " << response.sender.port() << '\n';
+
+        std::cout << info_message.str();
     }
 } //namespace UDP_server
