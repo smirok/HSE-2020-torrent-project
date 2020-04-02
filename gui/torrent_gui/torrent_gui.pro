@@ -39,6 +39,18 @@ FORMS += \
         open_torrent_window.ui \
         mainwindow.ui
 
+# Client
+
+# SOURCES += \
+#         $$PWD/../../client/source/API.cpp \
+#         $$PWD/../../client/source/Download.cpp \
+#         $$PWD/../../client/source/InfoHelper.cpp \
+#         $$PWD/../../client/source/make_torrent.cpp \
+#         $$PWD/../../client/source/View.cpp
+
+# INCLUDEPATH += \
+#         $$PWD/../../client/include/
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

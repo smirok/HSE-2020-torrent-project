@@ -15,6 +15,9 @@
 #include <QFileInfo>
 #include <QLabel>
 #include <QProgressBar>
+#include <QPushButton>
+#include <QDesktopServices>
+#include <QUrl>
 
 
 // =============================================JSON=============================================
@@ -52,14 +55,20 @@ void MainWindow::read_database(QString file_name) {
         }
 
         auto *w = new QWidget();
-        auto *vbl = new QHBoxLayout();
+        auto *layout = new QHBoxLayout();
         auto *label = new QLabel(name);
         auto *progress = new QProgressBar();
+        auto *button = new QPushButton("Open in the folder");
+        connect(button, &QPushButton::clicked, this, [=]() {
+            QUrl url_location(location);
+            QDesktopServices::openUrl(url_location);
+        });
         progress->setValue(100);
-        vbl->addWidget(label);
-        vbl->addWidget(progress);
-        vbl->setSizeConstraint( QLayout::SetFixedSize );
-        w->setLayout(vbl);
+        layout->addWidget(label);
+        layout->addWidget(progress);
+        layout->addWidget(button);
+        layout->setSizeConstraint( QLayout::SetFixedSize );
+        w->setLayout(layout);
 
         QListWidgetItem *item = new QListWidgetItem;
         item->setSizeHint(w->sizeHint());
@@ -99,7 +108,7 @@ bool MainWindow::check_database(QString file_name) {
     if (json["count"].isNull()) {
         return false;
     }
-    QString buffer = json["count"].toString();
+    QString buffer = json["count"].toString();            // TODO
     for (auto e : buffer) {
         if (e < '0' || '9' < e) {
             return false;
@@ -136,7 +145,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainW
     if (check_database("save.json")) {
         read_database("save.json");
     }
-    ui_->list_cur_torrents->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui_->list_cur_torrents->setContextMenuPolicy(Qt::CustomContextMenu);                                                           // TODO
     connect(ui_->list_cur_torrents, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(show_context_menu(QPoint)));
 }
 
@@ -169,7 +178,7 @@ void MainWindow::on_action_open_torrent_triggered() {
         return;
     }
 
-    int torrent_id = static_cast<int>(cur_torrens_.size());
+    int torrent_id = static_cast<int>(cur_torrens_.size());                                                      // TODO -- i need to create variable in the main class
     cur_torrens_.emplace_back(Torrent(torrent_id, window.path_to_torrent_, window.path_to_save_directory_));
 
     auto *w = new QWidget();
@@ -234,5 +243,11 @@ void MainWindow::show_context_menu(const QPoint &pos) {
     QPoint point = ui_->list_cur_torrents->mapToGlobal(pos);
     QMenu menu;
     menu.addAction("Delete",  this, SLOT(on_action_delete_torrent_triggered()));
+    menu.addAction("Information",  this, SLOT(on_action_delete_torrent_triggered()));
     menu.exec(point);
+}
+
+
+void MainWindow::open_in_folder() {
+    std::cout << "Button is pressed" << std::endl;
 }
