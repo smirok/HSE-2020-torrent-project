@@ -14,13 +14,6 @@
 #include <libtorrent/extensions/smart_ban.hpp>
 
 
-
-#include <stdio.h>
-#include <sys/select.h>
-#include <termios.h>
-#include <stropts.h>
-#include <unistd.h>
-
 class Download {
 public:
 

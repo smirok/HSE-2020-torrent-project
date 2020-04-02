@@ -176,7 +176,7 @@ TorrentInfo API::getInfo(const std::string &file_name) {
         if (auto *pr = lt::alert_cast<lt::state_update_alert>(a)) {
             if (pr->status.empty())
                 continue;
-            for (auto &s : pr->status) {
+            //for (auto &s : pr->status) {
                 //view.session_handles[s.handle] = s;
 
                 /*std::cout << "\r" << s.name << " " << ih.getState(s.state) << " "
@@ -184,7 +184,7 @@ TorrentInfo API::getInfo(const std::string &file_name) {
                           << (s.total_done / 1000) << " kB ("
                           << (s.progress_ppm / 10000) << "%) downloaded\x1b[K" << std::endl;*/
                 //std::cout.flush();
-            }
+            //}
             view.updateTorrents(pr->status);
             //std::cout << s.total_download << std::endl;
             //std::cout << std::endl;

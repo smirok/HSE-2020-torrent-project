@@ -14,7 +14,7 @@ class InfoHelper {
 public:
     // ====================HELP FUNCTIONS==================
 
-    std::pair<double, std::string> parseSize(int64_t byte_size) const noexcept;
+    std::pair<double, std::string> parseSize(uint64_t byte_size) const noexcept;
 
     std::string endTime(int64_t remain, int64_t speed) const noexcept;
 
@@ -48,10 +48,11 @@ struct TorrentInfo {
     std::string state;
 
     friend std::ostream &operator<<(std::ostream &out, const TorrentInfo &ti) {
-        std::cout << ti.state << " : " << ti.file_name <<
+        out << ti.state << " : " << ti.file_name <<
                   "   " << ti.downloaded_size.first << ti.downloaded_size.second << " of "
                   << ti.total_size.first << ti.total_size.second << "\n";
-        std::cout << ti.download_rate << " " << ti.percent_download << " " << ti.remain_time << "\n";
+        out << ti.download_rate << " " << ti.percent_download << " " << ti.remain_time << "\n";
+        return out;
     }
 };
 

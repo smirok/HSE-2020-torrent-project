@@ -14,7 +14,7 @@ namespace MeasureConstants {
 }
 
 
-std::pair<double, std::string> InfoHelper::parseSize(int64_t byte_size) const noexcept {
+std::pair<double, std::string> InfoHelper::parseSize(uint64_t byte_size) const noexcept {
     if (byte_size < MeasureConstants::BYTES_IN_KB)
         return {byte_size, "B"};
     if (byte_size < MeasureConstants::BYTES_IN_MB)
