@@ -9,7 +9,7 @@
  *
  * Сделать отчёт об ошибках и его отправку доделать
  *
- * Сделать фабрику запросов и ответов (три вида запросов, четыре вида ответов)
+ * Разделить на работу с запросами и базу дынных
  * Aсинхронность
  * HTTP
  * */
@@ -94,7 +94,7 @@ namespace UDP_server {
         request.sender.ep = ep;
         const uint8_t *iter = message.data();
 
-        if (message.size() < CONNECT_REQUEST_SIZE) { // в константу
+        if (message.size() < CONNECT_REQUEST_SIZE) {
             request.error_message = "Bad request: request size less than CONNECT_REQUEST_SIZE";
             return request;
         }
@@ -282,10 +282,10 @@ namespace UDP_server {
             num_want = DEFAULT_ANNOUNCE_PEERS;
         }
         num_want = std::min(num_want, MAX_ANNOUNCE_PEERS);
-        num_want = std::min(num_want, (int32_t)peer_set.size());
+        num_want = std::min(num_want, (int32_t) peer_set.size());
 
         std::set<Peer> selected;
-        while ((int32_t)selected.size() < num_want) {
+        while ((int32_t) selected.size() < num_want) {
             selected.insert(*peer_set.find_by_order(rnd() % peer_set.size()));
         }
         for (auto &peer : selected) {
@@ -317,7 +317,7 @@ namespace UDP_server {
             torrent.leechers--;
 
             auto new_peer = *old_peer_ptr;
-            new_peer.completed = true;
+            new_peer.completed = true; // check peer.left
 
             torrent.all_peers.erase(old_peer_ptr);
             torrent.all_peers.insert(new_peer);

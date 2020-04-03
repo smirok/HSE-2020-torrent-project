@@ -20,12 +20,12 @@ namespace UDP_server {
     /* структура из STL. как std::set, только с random_access за O(log n)
      * https://codeforces.com/blog/entry/11080
      */
-    template <typename T>
-    using  ordered_set = __gnu_pbds::tree<T,
-                                          __gnu_pbds::null_type,
-                                          std::less<>,
-                                          __gnu_pbds::rb_tree_tag,
-                                          __gnu_pbds::tree_order_statistics_node_update>;
+    template<typename T>
+    using ordered_set = __gnu_pbds::tree<T,
+                                         __gnu_pbds::null_type,
+                                         std::less<>,
+                                         __gnu_pbds::rb_tree_tag,
+                                         __gnu_pbds::tree_order_statistics_node_update>;
 
     class Peer {
     public:
@@ -58,6 +58,7 @@ namespace UDP_server {
     enum class ActionType : int32_t {
         CONNECT, ANNOUNCE, SCRAPE, ERROR
     };
+
     enum class EventType : int32_t {
         NONE, COMPLETED, STARTED, STOPPED
     };
