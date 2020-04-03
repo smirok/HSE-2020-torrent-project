@@ -38,9 +38,9 @@ namespace UDP_server {
     public:
         udp::endpoint ep;
         Hash_t peer_id{};
-        int32_t downloaded;
-        int32_t left;
-        int32_t uploaded;
+        int64_t downloaded;
+        int64_t left;
+        int64_t uploaded;
         bool completed = false;
     };
 

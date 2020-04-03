@@ -18,9 +18,6 @@ namespace UDP_server {
     using namespace boost::asio;
     using namespace boost::endian;
 
-    //Peer::Peer(const Hash_t &peer_id, udp::endpoint endpoint) :
-    //        endpoint(std::move(endpoint)), peer_id(peer_id) {}
-
     uint32_t Peer::ip() const noexcept {
         return ep.address().to_v4().to_ulong();
     }
@@ -94,6 +91,7 @@ namespace UDP_server {
 
     Request Server::parse_UDP_request(const std::vector<uint8_t> &message, const udp::endpoint &ep) {
         Request request;
+        request.sender.ep = ep;
         const uint8_t *iter = message.data();
 
         if (message.size() < CONNECT_REQUEST_SIZE) { // в константу
@@ -121,7 +119,6 @@ namespace UDP_server {
 
             request.info_hashes.emplace_back();
             load_value(request.info_hashes.back(), iter);
-            request.sender.ep = ep;
             load_value(request.sender.peer_id, iter);
             load_value(request.sender.downloaded, iter);
             load_value(request.sender.left, iter);
@@ -376,6 +373,8 @@ namespace UDP_server {
                 case EventType::STOPPED:
                     info_message << "Stopped ";
                     break;
+                default:
+                    info_message << " [ERROR not EventType] ";
             }
         }
         info_message << " from " << request.sender.ep.address().to_string()
