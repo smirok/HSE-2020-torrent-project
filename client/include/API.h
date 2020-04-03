@@ -20,26 +20,15 @@ public:
 
     void resumeDownload(const std::string &file_name);
 
-    void removeDownload(const std::string &file_name);
-
-    void takeUpdates(int query_type, const std::string &file_name = "",
-                     const std::string &path = ""); // потом сделать через шаблоны
-
-    void parseUpdates();
-
-    void startDownload();
-
-    void setPath(const std::string &path);
-
-    void setFile(const std::string &file_name);
+    void removeDownload(const std::string &file_name, bool should_delete);
 
     TorrentInfo getInfo(const std::string &file_name);
 
     View view;
 private:
-    int query_type_ = 0;
-    std::string file_name_;
-    std::string path_;
+    void setPath(const std::string &path);
+    void setFile(const std::string &file_name);
+    void takeUpdates();
 
     InfoHelper ih;
     lt::add_torrent_params p;
