@@ -8,8 +8,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 include_directories(${CMAKE_SOURCE_DIR}/include)
 add_executable(server
         src/main.cpp
-        src/server.cpp
-        include/server.hpp)
+        src/UDP_server.cpp
+        include/UDP_server.hpp
+        src/TorrentDataBase.cpp
+        include/TorrentDataBase.hpp
+        )
 target_link_libraries(server
         pthread
         boost_program_options)

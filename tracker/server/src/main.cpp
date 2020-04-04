@@ -1,7 +1,8 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
-#include "server.hpp"
+#include "UDP_server.hpp"
+#include "TorrentDataBase.hpp"
 
 namespace po = boost::program_options;
 
@@ -22,9 +23,10 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    DataBase::TorrentDataBase db;
     boost::asio::io_context io_context;
-
     UDP_server::Server server(io_context,
+                              db,
                               options["port"].as<uint16_t>(),
                               options["interval"].as<int32_t>(),
                               !options["silent"].empty());
