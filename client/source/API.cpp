@@ -1,7 +1,5 @@
 #include <iostream>
 #include <thread>
-#include <chrono>
-#include <fstream>
 
 #include "API.h"
 #include "InfoHelper.h"
@@ -26,11 +24,10 @@ API::API() {
 void API::createDownload(const std::string &file_name, const std::string &path) {
     setFile(file_name);
     setPath(path);
+    p.flags |= lt::torrent_flags::seed_mode;
 
-    view.torrent_to_hash[file_name] = p.info_hash;
     ses.async_add_torrent(p);
     std::vector<lt::alert *> alerts;
-
 
     int get_add_alert = false;
     while (!get_add_alert) {
@@ -57,7 +54,10 @@ void API::removeDownload(const std::string &file_name, bool should_delete) {
     if (i == view.session_handles.end())
         return; // кто должен это обработать?
 
-    auto j = std::find(view.current_handles.begin(), view.current_handles.end(), &i->second);
+    auto j = std::find(view.current_handles.begin(),
+            view.current_handles.end(),
+            std::make_unique<lt::torrent_status>(i->second));
+
     if (j != view.current_handles.end())
         view.current_handles.erase(j);
 
@@ -115,7 +115,6 @@ TorrentInfo API::getInfo(const std::string &file_name) {
 void API::takeUpdates() {
     std::vector<lt::alert *> alerts;
     ses.pop_alerts(&alerts);
-
     ses.post_torrent_updates();
 
     for (lt::alert const *a : alerts) {
@@ -125,4 +124,21 @@ void API::takeUpdates() {
             view.updateTorrents(pr->status);
         }
     }
+}
+
+void API::makeTorrent(const std::string& path_to_files, const std::vector<std::string>& trackers) {
+    lt::file_storage fs;
+
+    add_files(fs, path_to_files);
+
+    lt::create_torrent t(fs);
+    for (auto& tracker : trackers)
+        t.add_tracker(tracker);
+
+    t.set_creator("OUR TORRENT PROJECT");
+
+    //set_piece_hashes(t, ".");
+
+    std::ofstream out("kek.torrent", std::ios::binary);
+    bencode(std::ostream_iterator<char>(out), t.generate());
 }

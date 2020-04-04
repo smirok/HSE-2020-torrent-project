@@ -1,19 +1,15 @@
 #include "View.h"
 
-lt::torrent_status &View::getTorrent(const std::string& file_name) {
-    return session_handles[converter[file_name]];
-}
-
-void View::updateTorrents(std::vector<lt::torrent_status> st) {
+void View::updateTorrents(const std::vector<lt::torrent_status>& st) {
     bool need_update = false;
-    for (lt::torrent_status& t : st){
+    for (auto& t : st){
         if (t.download_rate == 0)
             continue;
         auto j = session_handles.find(t.handle);
         if (j != session_handles.end()){
             auto handle = t.handle;
             session_handles[handle] = t;
-            current_handles.push_back(&t);
+            current_handles.push_back(std::make_unique<lt::torrent_status>(t));
             need_update = true;
         }
     }
@@ -26,7 +22,7 @@ void View::updateCurrentTorrents() {
     current_handles.clear();
     for (auto &h : session_handles){
         if (h.first.is_valid())
-            current_handles.push_back(&h.second);
+            current_handles.push_back(std::make_unique<lt::torrent_status>(h.second));
     }
 
     for (auto i = current_handles.begin();
