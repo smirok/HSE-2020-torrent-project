@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/endian/conversion.hpp>
 #include <random>
-#include <utility>
+#include <set>
 
 #include "server.hpp"
 
@@ -30,16 +30,14 @@ namespace UDP_server {
         return peer_id < other.peer_id;
     }
 
-    Torrent::Torrent(const Hash_t &hash) :
-            info_hash(hash) {}
-
     Server::Server(boost::asio::io_context &io_context,
                    uint16_t port,
                    int32_t request_interval,
                    bool silent_mode) :
             socket_(io_context, udp::endpoint(udp::v4(), port)),
             request_interval_(request_interval),
-            silent_mode_(silent_mode) {}
+            silent_mode_(silent_mode),
+            random_(std::random_device()()) {}
 
     void Server::start() {
         for (;;) {
@@ -248,33 +246,19 @@ namespace UDP_server {
     }
 
     int32_t Server::count_leechers(const Hash_t &info_hash) {
-        if (torrents_.find(info_hash) == torrents_.end()) {
-            torrents_[info_hash] = Torrent(info_hash);
-        }
         return torrents_[info_hash].leechers;
     }
 
     int32_t Server::count_seeders(const Hash_t &info_hash) {
-        if (torrents_.find(info_hash) == torrents_.end()) {
-            torrents_[info_hash] = Torrent(info_hash);
-        }
         return torrents_[info_hash].seeders;
     }
 
     int32_t Server::count_downloads(const Hash_t &info_hash) {
-        if (torrents_.find(info_hash) == torrents_.end()) {
-            torrents_[info_hash] = Torrent(info_hash);
-        }
         return torrents_[info_hash].downloads;
     }
 
-    std::mt19937 rnd;// где должно быть,?
     std::vector<Peer> Server::get_peer_list(const Hash_t &info_hash, int32_t num_want) {
         std::vector<Peer> peers;
-
-        if (torrents_.find(info_hash) == torrents_.end()) {
-            torrents_[info_hash] = Torrent(info_hash);
-        }
 
         const auto &peer_set = torrents_[info_hash].all_peers;
 
@@ -286,7 +270,7 @@ namespace UDP_server {
 
         std::set<Peer> selected;
         while ((int32_t) selected.size() < num_want) {
-            selected.insert(*peer_set.find_by_order(rnd() % peer_set.size()));
+            selected.insert(*peer_set.find_by_order(random_() % peer_set.size()));
         }
         for (auto &peer : selected) {
             peers.push_back(peer);
@@ -295,10 +279,6 @@ namespace UDP_server {
     }
 
     void Server::update_peer_list(const Hash_t &info_hash, const Peer &peer, EventType event) {
-        if (torrents_.find(info_hash) == torrents_.end()) {
-            torrents_[info_hash] = Torrent(info_hash);
-        }
-
         auto &torrent = torrents_[info_hash];
         auto old_peer_ptr = torrent.all_peers.find(peer);
 
@@ -336,7 +316,7 @@ namespace UDP_server {
         }
     }
 
-    void Server::print_request(const Request &request) {
+    void Server::print_request(const Request &request) const {
         if (silent_mode_) {
             return;
         }
@@ -383,7 +363,7 @@ namespace UDP_server {
         std::cout << info_message.str();
     }
 
-    void Server::print_response(const Response &response) {
+    void Server::print_response(const Response &response) const {
         if (silent_mode_) {
             return;
         }

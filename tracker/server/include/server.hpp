@@ -1,8 +1,6 @@
 #pragma once
 
-//#include <cstdlib>
 #include <boost/asio.hpp>
-#include <set>
 
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
@@ -29,8 +27,6 @@ namespace UDP_server {
 
     class Peer {
     public:
-        //Peer() = default;
-        //explicit Peer(const Hash_t &peer_id, udp::endpoint endpoint);
         uint32_t ip() const noexcept;
         uint16_t port() const noexcept;
         bool operator<(const Peer &other) const noexcept;
@@ -46,9 +42,6 @@ namespace UDP_server {
 
     class Torrent {
     public:
-        Torrent() = default;
-        explicit Torrent(const Hash_t &hash);
-        Hash_t info_hash{}; //unused
         ordered_set<Peer> all_peers{};
         std::size_t leechers = 0;
         std::size_t seeders = 0;
@@ -63,7 +56,8 @@ namespace UDP_server {
         NONE, COMPLETED, STARTED, STOPPED
     };
 
-    struct Request {
+    class Request {
+    public:
         int64_t connection_id;
         ActionType action;
         int32_t transaction_id;
@@ -82,7 +76,8 @@ namespace UDP_server {
         std::string error_message;
     };
 
-    struct Response {
+    class Response {
+    public:
         ActionType action;
         int32_t transaction_id;
         // if action == 0  <---- вот из-за этого я и хочу разделить запросы
@@ -126,12 +121,13 @@ namespace UDP_server {
         int32_t count_downloads(const Hash_t &info_hash);
         std::vector<Peer> get_peer_list(const Hash_t &info_hash, int32_t num_want);
         void update_peer_list(const Hash_t &info_hash, const Peer &peer, EventType event);
-        void print_request(const Request &request);
-        void print_response(const Response &response);
+        void print_request(const Request &request) const;
+        void print_response(const Response &response) const;
     private:
         udp::socket socket_;
         int32_t request_interval_;
         bool silent_mode_;
+        std::mt19937 random_;
         std::map<Hash_t, Torrent> torrents_;
     };
 } //namespace UDP_server
