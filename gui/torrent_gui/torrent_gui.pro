@@ -43,6 +43,8 @@ SOURCES += \
         $$PWD/../../client/source/API.cpp \
         $$PWD/../../client/source/InfoHelper.cpp \
         $$PWD/../../client/source/View.cpp
+        $$PWD/../../client/source/make_torrent.cpp \
+        $$PWD/../../client/source/Download.cpp \
 
 INCLUDEPATH += $$PWD/../../client/include/
 
