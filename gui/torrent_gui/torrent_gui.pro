@@ -41,9 +41,7 @@ FORMS += \
 
 SOURCES += \
         $$PWD/../../client/source/API.cpp \
-        $$PWD/../../client/source/Download.cpp \
         $$PWD/../../client/source/InfoHelper.cpp \
-        $$PWD/../../client/source/make_torrent.cpp \
         $$PWD/../../client/source/View.cpp
 
 INCLUDEPATH += $$PWD/../../client/include/
