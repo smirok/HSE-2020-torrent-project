@@ -11,7 +11,6 @@ class OpenTorrentWindow;
 
 
 class OpenTorrentWindow : public QDialog {
-
     Q_OBJECT
 
 public:

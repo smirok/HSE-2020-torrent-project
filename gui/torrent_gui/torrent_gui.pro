@@ -28,12 +28,10 @@ SOURCES += \
         main.cpp \
         open_torrent_window.cpp \
         mainwindow.cpp \
-        torrent_client.cpp \
 
 HEADERS += \
         open_torrent_window.h \
         mainwindow.h \
-        torrent_client.h \
 
 FORMS += \
         open_torrent_window.ui \
@@ -41,15 +39,14 @@ FORMS += \
 
 # Client
 
-# SOURCES += \
-#         $$PWD/../../client/source/API.cpp \
-#         $$PWD/../../client/source/Download.cpp \
-#         $$PWD/../../client/source/InfoHelper.cpp \
-#         $$PWD/../../client/source/make_torrent.cpp \
-#         $$PWD/../../client/source/View.cpp
+SOURCES += \
+        $$PWD/../../client/source/API.cpp \
+        $$PWD/../../client/source/Download.cpp \
+        $$PWD/../../client/source/InfoHelper.cpp \
+        $$PWD/../../client/source/make_torrent.cpp \
+        $$PWD/../../client/source/View.cpp
 
-# INCLUDEPATH += \
-#         $$PWD/../../client/include/
+INCLUDEPATH += $$PWD/../../client/include/
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

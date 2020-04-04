@@ -37,7 +37,15 @@
     <addaction name="action_create_torrent"/>
     <addaction name="action_delete_torrent"/>
    </widget>
+   <widget class="QMenu" name="menuAction">
+    <property name="title">
+     <string>Action</string>
+    </property>
+    <addaction name="action_pause_torrent"/>
+    <addaction name="action_start_torrent"/>
+   </widget>
    <addaction name="menuCreate"/>
+   <addaction name="menuAction"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -49,6 +57,8 @@
    <addaction name="action_open_torrent"/>
    <addaction name="action_create_torrent"/>
    <addaction name="action_delete_torrent"/>
+   <addaction name="action_pause_torrent"/>
+   <addaction name="action_start_torrent"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_open_torrent">
@@ -68,6 +78,9 @@
    <property name="text">
     <string>Delete</string>
    </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
   </action>
   <action name="action_create_torrent">
    <property name="icon">
@@ -76,6 +89,24 @@
    </property>
    <property name="text">
     <string>Create</string>
+   </property>
+  </action>
+  <action name="action_pause_torrent">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resource/img/pause_torrent.png</normaloff>:/resource/img/pause_torrent.png</iconset>
+   </property>
+   <property name="text">
+    <string>Pause</string>
+   </property>
+  </action>
+  <action name="action_start_torrent">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/resource/img/play_torrent.png</normaloff>:/resource/img/play_torrent.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start</string>
    </property>
   </action>
  </widget>
