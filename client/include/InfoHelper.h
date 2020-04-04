@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdint>
 #include <iostream>
+#include <unordered_map>
 #include "libtorrent/torrent_status.hpp"
 
 class InfoHelper {

@@ -24,7 +24,7 @@ API::API() {
 void API::createDownload(const std::string &file_name, const std::string &path) {
     setFile(file_name);
     setPath(path);
-    p.flags |= lt::torrent_flags::seed_mode;
+    //p.flags |= lt::torrent_flags::seed_mode;
 
     ses.async_add_torrent(p);
     std::vector<lt::alert *> alerts;

@@ -9,7 +9,7 @@ void View::updateTorrents(const std::vector<lt::torrent_status>& st) {
         if (j != session_handles.end()){
             auto handle = t.handle;
             session_handles[handle] = t;
-            current_handles.push_back(std::make_unique<lt::torrent_status>(t));
+            current_handles.push_back(std::make_unique<lt::torrent_status const>(t));
             need_update = true;
         }
     }
@@ -22,7 +22,7 @@ void View::updateCurrentTorrents() {
     current_handles.clear();
     for (auto &h : session_handles){
         if (h.first.is_valid())
-            current_handles.push_back(std::make_unique<lt::torrent_status>(h.second));
+            current_handles.push_back(std::make_unique<lt::torrent_status const>(h.second));
     }
 
     for (auto i = current_handles.begin();
