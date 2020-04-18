@@ -16,6 +16,7 @@ namespace UDP_server {
     using namespace boost::asio;
     using namespace boost::endian;
 
+    std::atomic<bool> Server::in_process = true;
     Server::Server(boost::asio::io_context &io_context,
                    DataBase::TorrentDataBase &db,
                    uint16_t port,
@@ -24,17 +25,25 @@ namespace UDP_server {
             socket_(io_context, udp::endpoint(udp::v4(), port)),
             request_interval_(request_interval),
             silent_mode_(silent_mode),
-            db_(db) {}
+            db_(db) {
+    }
 
     void Server::start() {
-        for (;;) {
-            std::vector<uint8_t> message(PACKET_SIZE);
-            udp::endpoint sender_endpoint;
-            std::size_t message_length = socket_.receive_from(boost::asio::buffer(message), sender_endpoint);
-            message.resize(message_length);//?
-
-            process_request(std::move(message), std::move(sender_endpoint));
-            //как остановить сервер?
+        socket_.non_blocking(true);
+        std::vector<uint8_t> message(PACKET_SIZE);
+        udp::endpoint sender_endpoint;
+        while (in_process) {
+            message.clear();
+            boost::system::error_code error;
+            std::size_t message_length = socket_.receive_from(boost::asio::buffer(message), sender_endpoint, 0, error);
+            if (!error) {
+                message.resize(message_length);//?
+                process_request(std::move(message), std::move(sender_endpoint));
+            } else if (error == boost::asio::error::would_block) {
+                std::this_thread::sleep_for(chrono::microseconds(SLEEP_TIME));
+            } else {
+                //bad
+            }
         }
     }
 

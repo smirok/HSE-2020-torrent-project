@@ -6,6 +6,11 @@
 
 namespace po = boost::program_options;
 
+static void sig_handler(int sig) {
+    (void)sig;
+    UDP_server::Server::in_process = false;
+}
+
 int main(int argc, char *argv[]) {
     po::options_description description("Allowed options");
     description.add_options()
@@ -31,6 +36,9 @@ int main(int argc, char *argv[]) {
                               options["interval"].as<int32_t>(),
                               !options["silent"].empty());
 
+    struct sigaction act{};
+    act.sa_handler = sig_handler;
+    sigaction(SIGINT, &act, nullptr);
     server.start();
 
     return 0;

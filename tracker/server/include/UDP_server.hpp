@@ -8,6 +8,7 @@ namespace UDP_server {
     constexpr std::size_t PACKET_SIZE = 1024;
     constexpr std::size_t CONNECT_REQUEST_SIZE = 16;
     constexpr std::size_t ANNOUNCE_REQUEST_SIZE = 98;
+    constexpr int64_t SLEEP_TIME = 1000;
     using DataBase::Hash_t;
     using DataBase::HASH_SIZE;
 
@@ -57,7 +58,6 @@ namespace UDP_server {
 
         DataBase::Peer sender;
     };
-
     class Server {
     public:
         explicit Server(boost::asio::io_context &io_context,
@@ -75,6 +75,7 @@ namespace UDP_server {
         Response handle_error(const Request &request);
         void print_request(const Request &request, const udp::endpoint &sender_endpoint) const;
         void print_response(const Response &response, const udp::endpoint &sender_endpoint) const;
+        static std::atomic<bool> in_process;
     private:
         udp::socket socket_;
         int32_t request_interval_;

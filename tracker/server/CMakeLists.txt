@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 3.10) #upgrade to 3.15
 project(server)
 
 set(CMAKE_CXX_STANDARD 17)
-set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -Werror -Wshadow -Wnon-virtual-dtor -pedantic")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -Wall -Wextra -Werror -pedantic")
+
+find_package(Boost 1.71.0 REQUIRED)
+find_package(Boost 1.71.0 REQUIRED COMPONENTS system program_options)
+find_package(Threads REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 add_executable(server
