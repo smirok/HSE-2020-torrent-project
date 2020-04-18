@@ -11,6 +11,7 @@
 #include <libtorrent/read_resume_data.hpp> // unused
 #include <libtorrent/write_resume_data.hpp> // unused
 #include <libtorrent/error_code.hpp>
+#include <libtorrent/magnet_uri.hpp>
 
 API::API() {
     lt::settings_pack pack; // пакет выводимых команд для уведомлений о закаче
@@ -19,6 +20,7 @@ API::API() {
                                                 | lt::alert::status_notification);
 
     ses.apply_settings(pack); //добавляем пакет в сессию
+    lt::add_torrent_params at = lt::parse_magnet_uri();
 }
 
 void API::createDownload(const std::string &file_name, const std::string &path) {
@@ -42,7 +44,6 @@ void API::createDownload(const std::string &file_name, const std::string &path) 
             }
         }
     }
-
 }
 
 void API::removeDownload(const std::string &file_name, bool should_delete) {
@@ -93,8 +94,11 @@ void API::setPath(const std::string &path) {
     p.save_path = path;
 }
 
-void API::setFile(const std::string &file_name) {
-    p.ti = std::make_shared<lt::torrent_info>(file_name);
+void API::setFile(const std::string &file_identifier) {
+    if (file_identifier.substr(0,6) == "magnet")
+        p = lt::parse_magnet_uri(file_identifier);
+    else
+        p.ti = std::make_shared<lt::torrent_info>(file_identifier);
 }
 
 TorrentInfo API::getInfo(const std::string &file_name) {
