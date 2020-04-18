@@ -48,6 +48,9 @@
    <addaction name="menuAction"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -83,6 +86,9 @@
    </property>
   </action>
   <action name="action_create_torrent">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="resource.qrc">
      <normaloff>:/resource/img/create_torrent.png</normaloff>:/resource/img/create_torrent.png</iconset>

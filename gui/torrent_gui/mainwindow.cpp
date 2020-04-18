@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "open_torrent_window.h"
 
 #include <iostream>
 #include <vector>
@@ -19,6 +18,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QThread>
+#include <QFileDialog>
 
 
 // =============================================WORKER=============================================
@@ -78,7 +78,7 @@ void MainWindow::read_database(QString file_name) {
         QListWidgetItem *item = new QListWidgetItem;
         item->setSizeHint(w->sizeHint());
 
-        cur_torrens_.emplace_back(Torrent(i, name, location));
+        cur_torrens_.emplace_back(i, name, location, true);
         ui_->list_cur_torrents->addItem(item);
         ui_->list_cur_torrents->setItemWidget(item, w);
 
@@ -148,6 +148,7 @@ bool MainWindow::check_database(QString file_name) {
 // ============================================METHODS============================================
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainWindow) {
+    path_to_save_directory_ = "/home/andrey";
     ui_->setupUi(this);
     if (check_database("save.json")) {
         read_database("save.json");
@@ -172,20 +173,22 @@ MainWindow::~MainWindow() {
 // =============================================SLOTS=============================================
 
 void MainWindow::on_action_open_torrent_triggered() {
-    OpenTorrentWindow window;
-    window.setModal(true);
-    window.exec();
-
-    if (!window.data_is_read_) {
+    QString path_to_torrent = QFileDialog::getOpenFileName(this, "Select torrent file", "/home", "*.torrent");
+    QFileInfo torrent_file(path_to_torrent);
+    if (!torrent_file.exists()) {
+        return;
+    }
+    if (!torrent_file.isReadable()) {
+        QMessageBox::warning(this, "WARNING", "This is not a readable file");
         return;
     }
 
     int torrent_id = static_cast<int>(cur_torrens_.size());                                                      // TODO -- i need to create variable in the main class
-    cur_torrens_.emplace_back(Torrent(torrent_id, window.path_to_torrent_, window.path_to_save_directory_));
+    cur_torrens_.emplace_back(torrent_id, path_to_torrent, path_to_save_directory_, true);
 
     auto *w = new QWidget();
     auto *layout = new QHBoxLayout();
-    auto *label = new QLabel(window.path_to_torrent_);
+    auto *label = new QLabel(path_to_torrent);
     auto *progress = new QProgressBar();
     progress->setValue(0);
     layout->addWidget(label);
@@ -197,8 +200,8 @@ void MainWindow::on_action_open_torrent_triggered() {
     ui_->list_cur_torrents->addItem(item);
     ui_->list_cur_torrents->setItemWidget(item, w);
 
-    api_.createDownload(window.path_to_torrent_.toStdString(),
-                        window.path_to_save_directory_.toStdString());
+    api_.createDownload(path_to_torrent.toStdString(),
+                        path_to_save_directory_.toStdString());
 
 }
 
@@ -225,6 +228,7 @@ void MainWindow::on_action_pause_torrent_triggered() {
         return;
     }
     std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
+    cur_torrens_[static_cast<size_t>(row)].download_ = false;
     api_.pauseDownload(file_name);
 }
 
@@ -237,11 +241,23 @@ void MainWindow::on_action_start_torrent_triggered() {
         return;
     }
     std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
+    cur_torrens_[static_cast<size_t>(row)].download_ = true;
     api_.resumeDownload(file_name);
 }
 
 
 void MainWindow::update_statistic() {
+    int row = ui_->list_cur_torrents->currentRow();
+    if (row != -1) {
+        if (cur_torrens_[static_cast<size_t>(row)].download_) {
+            ui_->action_pause_torrent->setEnabled(true);
+            ui_->action_start_torrent->setEnabled(false);
+        } else {
+            ui_->action_pause_torrent->setEnabled(false);
+            ui_->action_start_torrent->setEnabled(true);
+        }
+    }
+
     for (size_t index = 0; index < cur_torrens_.size(); index++) {
         auto *w = new QWidget();
         auto *layout = new QHBoxLayout();

@@ -26,11 +26,9 @@ CONFIG += c++17
 
 SOURCES += \
         main.cpp \
-        open_torrent_window.cpp \
         mainwindow.cpp \
 
 HEADERS += \
-        open_torrent_window.h \
         mainwindow.h \
 
 FORMS += \

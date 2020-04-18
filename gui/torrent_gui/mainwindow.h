@@ -21,10 +21,16 @@ signals:
 
 
 struct Torrent {
-    Torrent(int id, QString name, QString locate) : id_(id), name_(name), locate_(locate) {}
+    Torrent(int id, QString name, QString locate, bool dowload) {
+        id_ = id;
+        name_= name;
+        locate_ = locate;
+        download_ = dowload;
+    }
     int id_;
     QString name_;
     QString locate_;
+    bool download_;
 };
 
 
@@ -53,6 +59,7 @@ private:
     Ui::MainWindow *ui_;
     std::vector<Torrent> cur_torrens_;
     API api_;
+    QString path_to_save_directory_;
 
     void read_database(QString file_name);
     void write_database(QString file_name);
