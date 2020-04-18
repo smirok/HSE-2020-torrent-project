@@ -70,7 +70,7 @@ std::string InfoHelper::getName(const lt::torrent_status &ts) const noexcept {
 }
 
 std::pair<long double, std::string> InfoHelper::getDownloadedSize(const lt::torrent_status &ts) const noexcept {
-    return parseSize(ts.total_download);
+    return parseSize(ts.total_done);
 }
 
 std::pair<long double, std::string> InfoHelper::getTotalSize(const lt::torrent_status &ts) noexcept {

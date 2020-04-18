@@ -15,10 +15,14 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-add_executable(client main.cpp source/InfoHelper.cpp include/InfoHelper.h source/API.cpp include/API.h
+add_executable(client source/InfoHelper.cpp include/InfoHelper.h source/API.cpp include/API.h
         source/View.cpp include/View.h)
-add_executable(Test test/run_tests.cpp test/test.cpp)
+add_executable(Test test/run_tests.cpp test/test.cpp
+
+        source/InfoHelper.cpp include/InfoHelper.h source/API.cpp include/API.h
+        source/View.cpp include/View.h)
 
 target_link_libraries(client torrent-rasterbar boost_system)
+target_link_libraries(Test torrent-rasterbar boost_system)
 
 target_link_libraries(Test gtest pthread)
