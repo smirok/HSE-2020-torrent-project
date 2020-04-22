@@ -20,7 +20,6 @@ API::API() {
                                                 | lt::alert::status_notification);
 
     ses.apply_settings(pack); //добавляем пакет в сессию
-    lt::add_torrent_params at = lt::parse_magnet_uri();
 }
 
 void API::createDownload(const std::string &file_name, const std::string &path) {
