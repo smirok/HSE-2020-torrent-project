@@ -15,9 +15,9 @@ int main(int argc, char *argv[]) {
     po::options_description description("Allowed options");
     description.add_options()
             ("help,h", "produce help message")
-            ("port,p", po::value<uint16_t>()->default_value(8000), "set servers port")
-            ("interval,i", po::value<int32_t>()->default_value(100), "set request interval")
-            ("silent,s", "disable info messages");
+            ("port,p", po::value<uint16_t>()->default_value(8000), "set servers port, default = 8000")
+            ("interval,i", po::value<int32_t>()->default_value(10), "set request interval for client (in seconds), default = 10")
+            ("silent,s", "disable info messages about requests");
 
     po::variables_map options;
     po::store(po::parse_command_line(argc, argv, description), options);

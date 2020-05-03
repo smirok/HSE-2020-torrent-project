@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10) #upgrade to 3.15
 project(server)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -Wall -Wextra -Werror -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -Wall -Wextra -Werror -Wshadow -pedantic")
 
 find_package(Boost 1.71.0 REQUIRED)
 find_package(Boost 1.71.0 REQUIRED COMPONENTS system program_options)
@@ -18,4 +18,4 @@ add_executable(server
         )
 target_link_libraries(server
         pthread
-        boost_program_options)
+        Boost::program_options)
