@@ -1,6 +1,6 @@
 #include <iostream>
+#include <string>
 #include <thread>
-
 #include "API.h"
 #include "InfoHelper.h"
 
@@ -129,19 +129,20 @@ void API::takeUpdates() {
     }
 }
 
-void API::makeTorrent(const std::string& path_to_files, const std::vector<std::string>& trackers) {
+void API::makeTorrent(const std::string& path_to_files,
+                      const std::vector<std::string>& trackers,
+                      const std::string& path_to_torrent_file,
+                      const std::string& torrent_file_name) {
     lt::file_storage fs;
-
     add_files(fs, path_to_files);
 
     lt::create_torrent t(fs);
     for (auto& tracker : trackers)
         t.add_tracker(tracker);
 
-    t.set_creator("OUR TORRENT PROJECT");
+    t.set_creator("TorrentX");
+    std::string full_path_torrent_file = path_to_torrent_file + "/" + torrent_file_name + ".torrent";
 
-    //set_piece_hashes(t, ".");
-
-    std::ofstream out("kek.torrent", std::ios::binary);
+    std::ofstream out(full_path_torrent_file, std::ios::binary);
     bencode(std::ostream_iterator<char>(out), t.generate());
 }

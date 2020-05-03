@@ -9,7 +9,7 @@ std::vector<std::pair<std::string,std::string>> torrent_pack = {
         {"/home/ilya/Game_Dev_Tycoon.torrent", "."},
 };
 
-TEST(CreateDownload, start){
+/*TEST(CreateDownload, start){
     API api;
     api.createDownload(torrent_pack[0].first,torrent_pack[0].second);
     while (api.getInfo(torrent_pack[0].first).state != "downloading"){
@@ -54,4 +54,12 @@ TEST(CreateDownload, end_of_download){
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     ASSERT_EQ(api.getInfo(torrent_pack[0].first).state,"finished");
+}*/
+
+TEST(makeTorrent, make_torrent) {
+    API api;
+    std::vector<std::string> trackers;
+    trackers.emplace_back("google/com");
+    api.makeTorrent("/home/ilya/for_testing/tester.txt",trackers,
+                    "/home/ilya/for_testing", "myfile");
 }

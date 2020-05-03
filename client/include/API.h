@@ -30,7 +30,10 @@ public:
 
     void removeDownload(const std::string &file_name, bool should_delete);
 
-    void makeTorrent(const std::string &path_to_files, const std::vector<std::string> &trackers);
+    void makeTorrent(const std::string &path_to_files,
+                     const std::vector<std::string> &trackers,
+                     const std::string& path_to_torrent_file,
+                     const std::string& torrent_file_name);
 
     TorrentInfo getInfo(const std::string &file_name);
 
