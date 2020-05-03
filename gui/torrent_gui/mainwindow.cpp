@@ -153,7 +153,6 @@ bool MainWindow::check_database(QString file_name) {
 // ============================================METHODS============================================
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainWindow) {
-    path_to_save_directory_ = "/home/andrey";
     ui_->setupUi(this);
 
     ui_->action_pause_torrent->setEnabled(false);
@@ -185,18 +184,22 @@ MainWindow::~MainWindow() {
 // =============================================SLOTS=============================================
 
 void MainWindow::on_action_open_torrent_triggered() {
-    QString path_to_torrent = QFileDialog::getOpenFileName(this, "Select torrent file", "/home", "*.torrent");
+    QString path_to_torrent = QFileDialog::getOpenFileName(this, "Select the torrent file", "/home", "*.torrent");
     QFileInfo torrent_file(path_to_torrent);
-    if (!torrent_file.exists()) {
-        return;
-    }
     if (!torrent_file.isReadable()) {
         QMessageBox::warning(this, "WARNING", "This is not a readable file");
         return;
     }
 
+    QString path_to_save_directory = QFileDialog::getExistingDirectory(this, "Select the save directory", "/home");
+    QFileInfo save_directory(path_to_save_directory);
+    if (!save_directory.isWritable()) {
+        QMessageBox::warning(this, "WARNING", "This is not a writable directory");
+        return;
+    }
+
     int torrent_id = static_cast<int>(cur_torrens_.size());                                                      // TODO -- i need to create variable in the main class
-    cur_torrens_.emplace_back(torrent_id, path_to_torrent, path_to_save_directory_, true);
+    cur_torrens_.emplace_back(torrent_id, path_to_torrent, path_to_save_directory, true);
 
     auto *w = new QWidget();
     auto *layout = new QHBoxLayout();
@@ -213,12 +216,14 @@ void MainWindow::on_action_open_torrent_triggered() {
     ui_->list_cur_torrents->setItemWidget(item, w);
 
     api_.createDownload(path_to_torrent.toStdString(),
-                        path_to_save_directory_.toStdString());
+                        path_to_save_directory.toStdString());
 
 }
 
 
 void MainWindow::on_action_delete_torrent_triggered() {
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Delete", "Do you want to detele the received files?");
+
     auto torrent = ui_->list_cur_torrents->currentItem();
     int row = ui_->list_cur_torrents->currentRow();
     if (torrent == nullptr) {
@@ -228,7 +233,7 @@ void MainWindow::on_action_delete_torrent_triggered() {
     std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
     ui_->list_cur_torrents->takeItem(row);
     cur_torrens_.erase(cur_torrens_.begin() + row); 
-    api_.removeDownload(file_name, true);
+    api_.removeDownload(file_name, reply == QMessageBox::Yes);
 }
 
 

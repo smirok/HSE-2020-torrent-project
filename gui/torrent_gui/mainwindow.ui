@@ -105,6 +105,9 @@
    <property name="text">
     <string>Pause</string>
    </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
   </action>
   <action name="action_start_torrent">
    <property name="icon">
@@ -113,6 +116,9 @@
    </property>
    <property name="text">
     <string>Start</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
    </property>
   </action>
  </widget>
