@@ -26,7 +26,7 @@
 void Worker::start() {
     while (true) {
         emit update_screen();
-        QThread::sleep(1);
+        QThread::msleep(400);
     }
 }
 
