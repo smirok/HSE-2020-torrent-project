@@ -1,25 +1,25 @@
 #pragma once
 
 #include <random>
-#include <ext/pb_ds/assoc_container.hpp>
-#include <ext/pb_ds/tree_policy.hpp>
+
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ranked_index.hpp>
+#include <boost/multi_index/identity.hpp>
+#include <map>
 
 namespace DataBase {
-
     constexpr std::size_t HASH_SIZE = 20;
     constexpr int32_t DEFAULT_ANNOUNCE_PEERS = 50;
     constexpr int32_t MAX_ANNOUNCE_PEERS = 150;
     using Hash_t = std::array<uint8_t, HASH_SIZE>;
 
-    /* структура из STL. как std::set, только с random_access за O(log n)
- * https://codeforces.com/blog/entry/11080
- */
+    using boost::multi_index::multi_index_container;
+    using boost::multi_index::indexed_by;
+    using boost::multi_index::ranked_non_unique;
+    using boost::multi_index::identity;
+
     template<typename T>
-    using ordered_set = __gnu_pbds::tree<T,
-                                        __gnu_pbds::null_type,
-                                        std::less<>,
-                                        __gnu_pbds::rb_tree_tag,
-                                        __gnu_pbds::tree_order_statistics_node_update>;
+    using ranked_set =  multi_index_container<T, indexed_by<ranked_non_unique<identity<T>>>>;
 
     enum class ActionType : int32_t {
         CONNECT, ANNOUNCE, SCRAPE, ERROR
@@ -45,7 +45,7 @@ namespace DataBase {
 
     class Torrent {
     public:
-        ordered_set<Peer> all_peers{};
+        ranked_set<Peer> all_peers;
         std::size_t leechers = 0;
         std::size_t seeders = 0;
         std::size_t downloads = 0;

@@ -1,7 +1,7 @@
 //
 // Created by kirill on 04/04/2020.
 //
-
+#include <set>
 #include "TorrentDataBase.hpp"
 
 namespace DataBase {
@@ -37,10 +37,11 @@ namespace DataBase {
 
         std::set<Peer> selected;
         while ((int32_t) selected.size() < num_want) {
-            selected.insert(*peer_set.find_by_order(random_() % peer_set.size()));
+            auto random_peer = *peer_set.nth(random_() % peer_set.size());
+            selected.insert(random_peer);
         }
         peers.reserve(selected.size());
-        for (auto &peer : selected) {
+        for (const auto &peer : selected) {
             peers.push_back(peer);
         }
         return peers;
