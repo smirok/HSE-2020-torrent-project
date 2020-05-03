@@ -63,7 +63,6 @@ private:
     Ui::MainWindow *ui_;
     std::vector<Torrent> cur_torrens_;
     API api_;
-    QString path_to_save_directory_;
 
     void read_database(QString file_name);
     void write_database(QString file_name);
