@@ -5,6 +5,8 @@
 
 #include <QMainWindow>
 #include <QThread>
+#include <QListWidgetItem>
+
 #include <vector>
 
 
@@ -54,6 +56,8 @@ private slots:
 
     void update_statistic();
     void show_context_menu(const QPoint &point);
+
+    void on_list_cur_torrents_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
 
 private:
     Ui::MainWindow *ui_;

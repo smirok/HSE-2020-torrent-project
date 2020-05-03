@@ -46,41 +46,41 @@ void MainWindow::read_database(QString file_name) {
         QString name = json[id].toObject()["name"].toString();
         QFileInfo torrent_file(name);
         if (!torrent_file.isFile() || torrent_file.suffix().toStdString() != "torrent") {
-            std::cout << "WARNING: This is not a torrent file -- " << name.toStdString() << std::endl;
+            std::cerr << "WARNING: This is not a torrent file -- " << name.toStdString() << std::endl;
             continue;
         }
         if (!torrent_file.isReadable()) {
-            std::cout << "WARNING: This is not a readable file -- " << name.toStdString() << std::endl;
+            std::cerr << "WARNING: This is not a readable file -- " << name.toStdString() << std::endl;
             continue;
         }
 
         QString location = json[id].toObject()["location"].toString();
         QFileInfo save_directory(location);
         if (!save_directory.isDir()) {
-            std::cout << "WARNING: This is not a directory -- " << location.toStdString() << std::endl;
+            std::cerr << "WARNING: This is not a directory -- " << location.toStdString() << std::endl;
             continue;
         }
         if (!save_directory.isWritable()) {
-            std::cout << "WARNING: This is not a writable directory -- " << location.toStdString() << std::endl;
+            std::cerr << "WARNING: This is not a writable directory -- " << location.toStdString() << std::endl;
             continue;
         }
 
-        auto *w = new QWidget();
+        auto *widget = new QWidget();
         auto *layout = new QHBoxLayout();
         auto *label = new QLabel(name);
         auto *progress = new QProgressBar();
         progress->setValue(0);
         layout->addWidget(label);
         layout->addWidget(progress);
-        layout->setSizeConstraint( QLayout::SetFixedSize );
-        w->setLayout(layout);
+        layout->setSizeConstraint(QLayout::SetFixedSize);
+        widget->setLayout(layout);
 
         QListWidgetItem *item = new QListWidgetItem;
-        item->setSizeHint(w->sizeHint());
+        item->setSizeHint(widget->sizeHint());
 
         cur_torrens_.emplace_back(i, name, location, true);
         ui_->list_cur_torrents->addItem(item);
-        ui_->list_cur_torrents->setItemWidget(item, w);
+        ui_->list_cur_torrents->setItemWidget(item, widget);
 
         api_.createDownload(name.toStdString(), location.toStdString());
     }
@@ -106,6 +106,11 @@ void MainWindow::write_database(QString file_name) {
 
 
 bool MainWindow::check_database(QString file_name) {
+    QFileInfo database(file_name);
+    if (!database.exists()) {
+        return false;
+    }
+
     QFile file(file_name);
     file.open(QIODevice::ReadOnly);
     QJsonDocument doc(QJsonDocument::fromJson(file.readAll()));
@@ -115,9 +120,9 @@ bool MainWindow::check_database(QString file_name) {
     if (json["count"].isNull()) {
         return false;
     }
-    QString buffer = json["count"].toString();            // TODO
-    for (auto e : buffer) {
-        if (e < '0' || '9' < e) {
+    QString buffer = json["count"].toString();
+    for (auto symbol : buffer) {
+        if (symbol < '0' || '9' < symbol) {
             return false;
         }
     }
@@ -150,11 +155,18 @@ bool MainWindow::check_database(QString file_name) {
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainWindow) {
     path_to_save_directory_ = "/home/andrey";
     ui_->setupUi(this);
+
+    ui_->action_pause_torrent->setEnabled(false);
+    ui_->action_start_torrent->setEnabled(false);
+    ui_->action_delete_torrent->setEnabled(false);
+
     if (check_database("save.json")) {
         read_database("save.json");
     }
-    ui_->list_cur_torrents->setContextMenuPolicy(Qt::CustomContextMenu);                                                           // TODO
+
+    ui_->list_cur_torrents->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui_->list_cur_torrents, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(show_context_menu(QPoint)));
+
     auto *thread = new QThread;
     auto *worker = new Worker;
     worker->moveToThread(thread);
@@ -230,6 +242,9 @@ void MainWindow::on_action_pause_torrent_triggered() {
     std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
     cur_torrens_[static_cast<size_t>(row)].download_ = false;
     api_.pauseDownload(file_name);
+
+    ui_->action_pause_torrent->setEnabled(false);
+    ui_->action_start_torrent->setEnabled(true);
 }
 
 
@@ -243,21 +258,13 @@ void MainWindow::on_action_start_torrent_triggered() {
     std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
     cur_torrens_[static_cast<size_t>(row)].download_ = true;
     api_.resumeDownload(file_name);
+
+    ui_->action_pause_torrent->setEnabled(true);
+    ui_->action_start_torrent->setEnabled(false);
 }
 
 
 void MainWindow::update_statistic() {
-    int row = ui_->list_cur_torrents->currentRow();
-    if (row != -1) {
-        if (cur_torrens_[static_cast<size_t>(row)].download_) {
-            ui_->action_pause_torrent->setEnabled(true);
-            ui_->action_start_torrent->setEnabled(false);
-        } else {
-            ui_->action_pause_torrent->setEnabled(false);
-            ui_->action_start_torrent->setEnabled(true);
-        }
-    }
-
     for (size_t index = 0; index < cur_torrens_.size(); index++) {
         auto *w = new QWidget();
         auto *layout = new QHBoxLayout();
@@ -293,4 +300,27 @@ void MainWindow::show_context_menu(const QPoint &pos) {
     menu.addAction("Delete",  this, SLOT(on_action_delete_torrent_triggered()));
     menu.addAction("Information",  this, SLOT(on_action_delete_torrent_triggered()));
     menu.exec(point);
+}
+
+
+void MainWindow::on_list_cur_torrents_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous) {
+    (void) current;
+    (void) previous;
+
+    int row = ui_->list_cur_torrents->currentRow();
+    if (row != -1) {
+        if (cur_torrens_[static_cast<size_t>(row)].download_) {
+            ui_->action_pause_torrent->setEnabled(true);
+            ui_->action_start_torrent->setEnabled(false);
+            ui_->action_delete_torrent->setEnabled(true);
+        } else {
+            ui_->action_pause_torrent->setEnabled(false);
+            ui_->action_start_torrent->setEnabled(true);
+            ui_->action_delete_torrent->setEnabled(true);
+        }
+    } else {
+        ui_->action_pause_torrent->setEnabled(false);
+        ui_->action_start_torrent->setEnabled(false);
+        ui_->action_delete_torrent->setEnabled(false);
+    }
 }
