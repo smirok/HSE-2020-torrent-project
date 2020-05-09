@@ -52,16 +52,16 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
         resource.qrc
 
-unix:!macx: LIBS += -L$$PWD/../../../../../../../usr/local/lib/ -ltorrent-rasterbar
+unix:!macx: LIBS += -L/usr/local/lib/ -ltorrent-rasterbar
 
-INCLUDEPATH += $$PWD/../../../../../../../usr/local/include
-DEPENDPATH += $$PWD/../../../../../../../usr/local/include
+INCLUDEPATH += /usr/local/include
+DEPENDPATH += /usr/local/include
 
-unix:!macx: PRE_TARGETDEPS += $$PWD/../../../../../../../usr/local/lib/libtorrent-rasterbar.a
+unix:!macx: PRE_TARGETDEPS += /usr/local/lib/libtorrent-rasterbar.a
 
-unix:!macx: LIBS += -L$$PWD/../../../../../../../usr/lib/x86_64-linux-gnu/ -lboost_system
+unix:!macx: LIBS += -L/usr/lib/x86_64-linux-gnu/ -lboost_system
 
-INCLUDEPATH += $$PWD/../../../../../../../usr/lib/x86_64-linux-gnu
-DEPENDPATH += $$PWD/../../../../../../../usr/lib/x86_64-linux-gnu
+INCLUDEPATH += /usr/lib/x86_64-linux-gnu
+DEPENDPATH += usr/lib/x86_64-linux-gnu
 
-unix:!macx: PRE_TARGETDEPS += $$PWD/../../../../../../../usr/lib/x86_64-linux-gnu/libboost_system.a
+unix:!macx: PRE_TARGETDEPS += /usr/lib/x86_64-linux-gnu/libboost_system.a

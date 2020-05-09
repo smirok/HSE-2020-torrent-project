@@ -19,6 +19,7 @@
 #include <QUrl>
 #include <QThread>
 #include <QFileDialog>
+#include <QDir>
 
 
 // =============================================WORKER=============================================
@@ -159,8 +160,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainW
     ui_->action_start_torrent->setEnabled(false);
     ui_->action_delete_torrent->setEnabled(false);
 
-    if (check_database("save.json")) {
-        read_database("save.json");
+    if (check_database(QDir::homePath() + "/.config/TorrentX.json")) {
+        read_database(QDir::homePath() + "/.config/TorrentX.json");
     }
 
     ui_->list_cur_torrents->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -176,7 +177,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainW
 
 
 MainWindow::~MainWindow() {
-    write_database("save.json");
+    write_database(QDir::homePath() + "/.config/TorrentX.json");
     delete ui_;
 }
 
@@ -232,7 +233,7 @@ void MainWindow::on_action_delete_torrent_triggered() {
     }
     std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
     ui_->list_cur_torrents->takeItem(row);
-    cur_torrens_.erase(cur_torrens_.begin() + row); 
+    cur_torrens_.erase(cur_torrens_.begin() + row);
     api_.removeDownload(file_name, reply == QMessageBox::Yes);
 }
 
