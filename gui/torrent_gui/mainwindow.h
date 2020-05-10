@@ -8,6 +8,10 @@
 #include <QListWidgetItem>
 
 #include <vector>
+#include <atomic>
+
+
+static std::atomic<bool> program_is_running = true;
 
 
 class Worker : public QObject {
@@ -23,16 +27,16 @@ signals:
 
 
 struct Torrent {
-    Torrent(int id, QString name, QString locate, bool dowload) {
+    Torrent(int id, QString name, QString locate) {
         id_ = id;
         name_= name;
         locate_ = locate;
-        download_ = dowload;
     }
     int id_;
     QString name_;
     QString locate_;
-    bool download_;
+    bool download_ = true;
+    bool finished_ = false;
 };
 
 
@@ -63,10 +67,10 @@ private:
     Ui::MainWindow *ui_;
     std::vector<Torrent> cur_torrens_;
     API api_;
+    QThread *thread_;
 
     void read_database(QString file_name);
     void write_database(QString file_name);
     bool check_database(QString file_name);
 
 };
-

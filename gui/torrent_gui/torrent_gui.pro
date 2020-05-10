@@ -32,7 +32,6 @@ HEADERS += \
         mainwindow.h \
 
 FORMS += \
-        open_torrent_window.ui \
         mainwindow.ui
 
 # Client

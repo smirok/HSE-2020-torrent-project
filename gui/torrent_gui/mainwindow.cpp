@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <ctime>
 
 #include <QWidget>
 #include <QMessageBox>
@@ -25,7 +26,8 @@
 // =============================================WORKER=============================================
 
 void Worker::start() {
-    while (true) {
+    while (program_is_running) {
+        std::cout << std::time(nullptr) << std::endl;
         emit update_screen();
         QThread::msleep(400);
     }
@@ -79,7 +81,7 @@ void MainWindow::read_database(QString file_name) {
         QListWidgetItem *item = new QListWidgetItem;
         item->setSizeHint(widget->sizeHint());
 
-        cur_torrens_.emplace_back(i, name, location, true);
+        cur_torrens_.emplace_back(i, name, location);
         ui_->list_cur_torrents->addItem(item);
         ui_->list_cur_torrents->setItemWidget(item, widget);
 
@@ -142,7 +144,7 @@ bool MainWindow::check_database(QString file_name) {
         if (buffer["name"].isNull()) {
            return false;
         }
-        if (buffer["location"].isNull()) { 
+        if (buffer["location"].isNull()) {
            return false;
         }
     }
@@ -167,18 +169,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainW
     ui_->list_cur_torrents->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui_->list_cur_torrents, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(show_context_menu(QPoint)));
 
-    auto *thread = new QThread;
+    thread_ = new QThread;
     auto *worker = new Worker;
-    worker->moveToThread(thread);
+    worker->moveToThread(thread_);
     connect(worker, SIGNAL(update_screen()), this, SLOT(update_statistic()));
-    connect(thread, SIGNAL(started()), worker, SLOT(start()));
-    thread->start();
+    connect(thread_, SIGNAL(started()), worker, SLOT(start()));
+    thread_->start();
 }
 
 
 MainWindow::~MainWindow() {
+    program_is_running = false;
+    thread_->quit();
+    thread_->wait();
     write_database(QDir::homePath() + "/.config/TorrentX.json");
     delete ui_;
+    qDebug() << "End of the program\n";
 }
 
 
@@ -200,7 +206,7 @@ void MainWindow::on_action_open_torrent_triggered() {
     }
 
     int torrent_id = static_cast<int>(cur_torrens_.size());                                                      // TODO -- i need to create variable in the main class
-    cur_torrens_.emplace_back(torrent_id, path_to_torrent, path_to_save_directory, true);
+    cur_torrens_.emplace_back(torrent_id, path_to_torrent, path_to_save_directory);
 
     auto *w = new QWidget();
     auto *layout = new QHBoxLayout();
@@ -225,12 +231,7 @@ void MainWindow::on_action_open_torrent_triggered() {
 void MainWindow::on_action_delete_torrent_triggered() {
     QMessageBox::StandardButton reply = QMessageBox::question(this, "Delete", "Do you want to detele the received files?");
 
-    auto torrent = ui_->list_cur_torrents->currentItem();
     int row = ui_->list_cur_torrents->currentRow();
-    if (torrent == nullptr) {
-        QMessageBox::warning(this, "Error", "You haven't chosen a torrent");
-        return;
-    }
     std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
     ui_->list_cur_torrents->takeItem(row);
     cur_torrens_.erase(cur_torrens_.begin() + row);
@@ -239,12 +240,7 @@ void MainWindow::on_action_delete_torrent_triggered() {
 
 
 void MainWindow::on_action_pause_torrent_triggered() {
-    auto torrent = ui_->list_cur_torrents->currentItem();
     int row = ui_->list_cur_torrents->currentRow();
-    if (torrent == nullptr) {
-        QMessageBox::warning(this, "Error", "You haven't chosen a torrent");
-        return;
-    }
     std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
     cur_torrens_[static_cast<size_t>(row)].download_ = false;
     api_.pauseDownload(file_name);
@@ -255,12 +251,7 @@ void MainWindow::on_action_pause_torrent_triggered() {
 
 
 void MainWindow::on_action_start_torrent_triggered() {
-    auto torrent = ui_->list_cur_torrents->currentItem();
     int row = ui_->list_cur_torrents->currentRow();
-    if (torrent == nullptr) {
-        QMessageBox::warning(this, "Error", "You haven't chosen a torrent");
-        return;
-    }
     std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
     cur_torrens_[static_cast<size_t>(row)].download_ = true;
     api_.resumeDownload(file_name);
@@ -287,6 +278,7 @@ void MainWindow::update_statistic() {
         layout->addWidget(progress);
 
         if (progress->value() == 100) {
+            cur_torrens_[index].finished_ = true;
             layout->addWidget(button);
         }
 
@@ -296,6 +288,13 @@ void MainWindow::update_statistic() {
         auto *item = ui_->list_cur_torrents->item(static_cast<int>(index));
         item->setSizeHint(w->sizeHint());
         ui_->list_cur_torrents->setItemWidget(item, w);
+    }
+
+    int row = ui_->list_cur_torrents->currentRow();
+    if (row != -1 && cur_torrens_[static_cast<size_t>(row)].finished_) {
+        ui_->action_pause_torrent->setEnabled(false);
+        ui_->action_start_torrent->setEnabled(false);
+        ui_->action_delete_torrent->setEnabled(true);
     }
 }
 
@@ -315,7 +314,11 @@ void MainWindow::on_list_cur_torrents_currentItemChanged(QListWidgetItem *curren
 
     int row = ui_->list_cur_torrents->currentRow();
     if (row != -1) {
-        if (cur_torrens_[static_cast<size_t>(row)].download_) {
+        if (cur_torrens_[static_cast<size_t>(row)].finished_) {
+            ui_->action_pause_torrent->setEnabled(false);
+            ui_->action_start_torrent->setEnabled(false);
+            ui_->action_delete_torrent->setEnabled(true);
+        } else if (cur_torrens_[static_cast<size_t>(row)].download_) {
             ui_->action_pause_torrent->setEnabled(true);
             ui_->action_start_torrent->setEnabled(false);
             ui_->action_delete_torrent->setEnabled(true);
