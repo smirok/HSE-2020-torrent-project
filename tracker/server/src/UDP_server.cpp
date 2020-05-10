@@ -25,15 +25,14 @@ namespace UDP_server {
             socket_(io_context, udp::endpoint(udp::v4(), port)),
             request_interval_(request_interval),
             silent_mode_(silent_mode),
-            db_(db) {
-    }
+            db_(db) {}
 
     void Server::start() {
         socket_.non_blocking(true);
-        std::vector<uint8_t> message(PACKET_SIZE);
+        std::vector<uint8_t> message;
         udp::endpoint sender_endpoint;
         while (in_process) {
-            message.clear();
+            message.assign(PACKET_SIZE, 0);
             boost::system::error_code error;
             std::size_t message_length = socket_.receive_from(boost::asio::buffer(message), sender_endpoint, 0, error);
             if (!error) {
@@ -42,13 +41,12 @@ namespace UDP_server {
             } else if (error == boost::asio::error::would_block) {
                 std::this_thread::sleep_for(chrono::microseconds(SLEEP_TIME));
             } else {
-                //bad
+                throw std::runtime_error("Server::start() socket error\n");
             }
         }
     }
 
     void Server::process_request(std::vector<uint8_t> message, udp::endpoint sender_endpoint) {
-
         Request request = parse_UDP_request(message, sender_endpoint);
 
         print_request(request, sender_endpoint);
@@ -99,10 +97,9 @@ namespace UDP_server {
         const uint8_t *iter = message.data();
 
         if (message.size() < CONNECT_REQUEST_SIZE) {
-            request.error_message = "Bad request: request size less than CONNECT_REQUEST_SIZE";
+            request.error_message = "Bad request: request_size=" + std::to_string(message.size()) + "  less than CONNECT_REQUEST_SIZE";
             return request;
         }
-
 
         load_value(request.connection_id, iter);
         load_value(request.action, iter);
@@ -243,7 +240,7 @@ namespace UDP_server {
 
     Response Server::handle_error(const Request &request) {
         Response response;
-        response.action = DataBase::ActionType::ERROR; //  == 2
+        response.action = DataBase::ActionType::ERROR; //  == 3
         response.transaction_id = request.transaction_id;
         response.sender = request.sender;
 
@@ -258,8 +255,7 @@ namespace UDP_server {
             return;
         }
         std::stringstream info_message;
-
-        info_message << "REQUEST action=";
+        info_message << "->REQUEST action=";
         switch (request.action) {
             case DataBase::ActionType::CONNECT:
                 info_message << "Connect ";
@@ -320,6 +316,12 @@ namespace UDP_server {
                 info_message << "Error ";
                 break;
         }
+
+        if (response.action == DataBase::ActionType::ERROR) {
+            info_message << response.error_message << " ";
+        }
+
+        info_message << "[ " << response.peers.size() << " in the list ]";
 
         info_message << " to " << sender_endpoint.address().to_string()
                      << " " << sender_endpoint.port() << '\n';

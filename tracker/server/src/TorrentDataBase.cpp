@@ -2,6 +2,7 @@
 // Created by kirill on 04/04/2020.
 //
 #include <set>
+#include <iostream>
 #include "TorrentDataBase.hpp"
 
 namespace DataBase {
@@ -33,10 +34,10 @@ namespace DataBase {
             num_want = DEFAULT_ANNOUNCE_PEERS;
         }
         num_want = std::min(num_want, MAX_ANNOUNCE_PEERS);
-        num_want = std::min(num_want, (int32_t) peer_set.size());
+        num_want = std::min(num_want, static_cast<int32_t>(peer_set.size()));
 
         std::set<Peer> selected;
-        while ((int32_t) selected.size() < num_want) {
+        while (static_cast<int32_t>(selected.size()) < num_want) {
             auto random_peer = *peer_set.nth(random_() % peer_set.size());
             selected.insert(random_peer);
         }
@@ -51,18 +52,22 @@ namespace DataBase {
         auto &torrent = torrents_[info_hash];
         auto old_peer_ptr = torrent.all_peers.find(peer);
 
-        if (old_peer_ptr == torrent.all_peers.end() && event != EventType::STARTED) {
-            //bad
+        if (event != EventType::STARTED && old_peer_ptr == torrent.all_peers.end()) {
+            std::cerr << "TorrentDataBase::update_peer_list: peer not in the list\n";
+            //should send error
+            return;
         }
         if (event == EventType::NONE) {
             //nothing
         }
         if (event == EventType::COMPLETED) {
             if (old_peer_ptr->completed) {
-                //bad
+                std::cerr << "TorrentDataBase::update_peer_list: already completed\n";
+                //should send error
             }
             if (peer.left != 0) {
-                //bad
+                std::cerr << "TorrentDataBase::update_peer_list: not completed actualy\n";
+                //should send error
             }
             torrent.seeders++;
             torrent.downloads++;
