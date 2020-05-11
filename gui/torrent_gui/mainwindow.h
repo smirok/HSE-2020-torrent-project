@@ -27,12 +27,10 @@ signals:
 
 
 struct Torrent {
-    Torrent(int id, QString name, QString locate) {
-        id_ = id;
+    Torrent(QString name, QString locate) {
         name_= name;
         locate_ = locate;
     }
-    int id_;
     QString name_;
     QString locate_;
     bool download_ = true;

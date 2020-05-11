@@ -21,13 +21,13 @@
 #include <QThread>
 #include <QFileDialog>
 #include <QDir>
+#include <QDialog>
 
 
 // =============================================WORKER=============================================
 
 void Worker::start() {
     while (program_is_running) {
-        std::cout << std::time(nullptr) << std::endl;
         emit update_screen();
         QThread::msleep(400);
     }
@@ -36,8 +36,8 @@ void Worker::start() {
 
 // =============================================JSON=============================================
 
-void MainWindow::read_database(QString file_name) {
-    QFile file(file_name);
+void MainWindow::read_database(QString database) {
+    QFile file(database);
     file.open(QIODevice::ReadOnly);
     QJsonDocument doc(QJsonDocument::fromJson(file.readAll()));
     QJsonObject json(doc.object());
@@ -46,14 +46,14 @@ void MainWindow::read_database(QString file_name) {
     for (int i = 0; i < count_torrent; i++) {
         QString id = QString::number(i);
 
-        QString name = json[id].toObject()["name"].toString();
-        QFileInfo torrent_file(name);
+        QString filename = json[id].toObject()["name"].toString();
+        QFileInfo torrent_file(filename);
         if (!torrent_file.isFile() || torrent_file.suffix().toStdString() != "torrent") {
-            std::cerr << "WARNING: This is not a torrent file -- " << name.toStdString() << std::endl;
+            std::cerr << "WARNING: This is not a torrent file -- " << filename.toStdString() << std::endl;
             continue;
         }
         if (!torrent_file.isReadable()) {
-            std::cerr << "WARNING: This is not a readable file -- " << name.toStdString() << std::endl;
+            std::cerr << "WARNING: This is not a readable file -- " << filename.toStdString() << std::endl;
             continue;
         }
 
@@ -70,7 +70,7 @@ void MainWindow::read_database(QString file_name) {
 
         auto *widget = new QWidget();
         auto *layout = new QHBoxLayout();
-        auto *label = new QLabel(name);
+        auto *label = new QLabel(filename);
         auto *progress = new QProgressBar();
         progress->setValue(0);
         layout->addWidget(label);
@@ -78,14 +78,14 @@ void MainWindow::read_database(QString file_name) {
         layout->setSizeConstraint(QLayout::SetFixedSize);
         widget->setLayout(layout);
 
-        QListWidgetItem *item = new QListWidgetItem;
+        QListWidgetItem *item = new QListWidgetItem();
         item->setSizeHint(widget->sizeHint());
 
-        cur_torrens_.emplace_back(i, name, location);
+        cur_torrens_.emplace_back(filename, location);
         ui_->list_cur_torrents->addItem(item);
         ui_->list_cur_torrents->setItemWidget(item, widget);
 
-        api_.createDownload(name.toStdString(), location.toStdString());
+        api_.createDownload(filename.toStdString(), location.toStdString());
     }
 }
 
@@ -169,8 +169,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainW
     ui_->list_cur_torrents->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui_->list_cur_torrents, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(show_context_menu(QPoint)));
 
-    thread_ = new QThread;
-    auto *worker = new Worker;
+    thread_ = new QThread();
+    auto *worker = new Worker();
     worker->moveToThread(thread_);
     connect(worker, SIGNAL(update_screen()), this, SLOT(update_statistic()));
     connect(thread_, SIGNAL(started()), worker, SLOT(start()));
@@ -182,9 +182,10 @@ MainWindow::~MainWindow() {
     program_is_running = false;
     thread_->quit();
     thread_->wait();
+
     write_database(QDir::homePath() + "/.config/TorrentX.json");
+
     delete ui_;
-    qDebug() << "End of the program\n";
 }
 
 
@@ -205,22 +206,22 @@ void MainWindow::on_action_open_torrent_triggered() {
         return;
     }
 
-    int torrent_id = static_cast<int>(cur_torrens_.size());                                                      // TODO -- i need to create variable in the main class
-    cur_torrens_.emplace_back(torrent_id, path_to_torrent, path_to_save_directory);
-
-    auto *w = new QWidget();
+    auto *widget = new QWidget();
     auto *layout = new QHBoxLayout();
     auto *label = new QLabel(path_to_torrent);
     auto *progress = new QProgressBar();
     progress->setValue(0);
     layout->addWidget(label);
     layout->addWidget(progress);
-    layout->setSizeConstraint( QLayout::SetFixedSize );
-    w->setLayout(layout);
-    auto *item = new QListWidgetItem;
-    item->setSizeHint(w->sizeHint());
+    layout->setSizeConstraint(QLayout::SetFixedSize);
+    widget->setLayout(layout);
+
+    auto *item = new QListWidgetItem();
+    item->setSizeHint(widget->sizeHint());
+
+    cur_torrens_.emplace_back(path_to_torrent, path_to_save_directory);
     ui_->list_cur_torrents->addItem(item);
-    ui_->list_cur_torrents->setItemWidget(item, w);
+    ui_->list_cur_torrents->setItemWidget(item, widget);
 
     api_.createDownload(path_to_torrent.toStdString(),
                         path_to_save_directory.toStdString());
@@ -229,13 +230,26 @@ void MainWindow::on_action_open_torrent_triggered() {
 
 
 void MainWindow::on_action_delete_torrent_triggered() {
-    QMessageBox::StandardButton reply = QMessageBox::question(this, "Delete", "Do you want to detele the received files?");
+    QMessageBox message_box(this);
+    message_box.setWindowTitle("Delete");
+    message_box.setIcon(QMessageBox::Question);
+    message_box.setText("Do you want to detele the received files?");
+    message_box.addButton(QMessageBox::Cancel);
+    message_box.addButton(QMessageBox::No);
+    message_box.addButton(QMessageBox::Yes);
+    auto reply = message_box.exec();
+
+    if (reply == QMessageBox::Cancel) {
+        return;
+    }
 
     int row = ui_->list_cur_torrents->currentRow();
-    std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
+    std::string filename = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
+
     ui_->list_cur_torrents->takeItem(row);
     cur_torrens_.erase(cur_torrens_.begin() + row);
-    api_.removeDownload(file_name, reply == QMessageBox::Yes);
+
+    api_.removeDownload(filename, reply == QMessageBox::Yes);
 }
 
 
