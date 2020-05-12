@@ -1,9 +1,6 @@
 # HSE-2020-torrent-project
-Project  
-https://docs.google.com/document/d/1GHauiljM23of2-s0Y5CSCtIFmqAkTKQ3zqjFo2W7Zyo/edit#heading=h.6266guo5hwn7  
 
-И тут мы еще ничего не написали.  
-Но в наших дирикториях уже что то есть!
+[О проекте](https://docs.google.com/presentation/d/e/2PACX-1vR_fSVhkFI02W2q5zurZZieDOoSeY6LPnBYoV34XySGV7uKP_QvbALcYj-QesjFz8H7HVoN-OcLQLEb/pub?start=false&loop=false&delayms=15000)
 
 Авторы:  
 [Андрей Шеин](https://github.com/andreyshspb)  
