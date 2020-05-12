@@ -20,6 +20,4 @@ add_executable(Test test/run_tests.cpp test/test.cpp
         source/InfoHelper.cpp include/InfoHelper.h source/API.cpp include/API.h
         source/View.cpp include/View.h)
 
-target_link_libraries(Test torrent-rasterbar boost_system)
-
-target_link_libraries(Test gtest pthread)
+target_link_libraries(Test torrent-rasterbar boost_system gtest)
