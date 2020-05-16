@@ -6,6 +6,8 @@
 #include <QMainWindow>
 #include <QThread>
 #include <QListWidgetItem>
+#include <QObject>
+#include <QProgressBar>
 
 #include <vector>
 #include <atomic>
@@ -27,14 +29,17 @@ signals:
 
 
 struct Torrent {
-    Torrent(QString name, QString locate) {
+    Torrent(QString name, QString locate, QProgressBar *progress_bar) {
         name_= name;
         locate_ = locate;
+        progress_bar_ = progress_bar;
     }
     QString name_;
     QString locate_;
     bool download_ = true;
     bool finished_ = false;
+
+    QProgressBar *progress_bar_ = nullptr;
 };
 
 
@@ -60,6 +65,8 @@ private slots:
     void show_context_menu(const QPoint &point);
 
     void on_list_cur_torrents_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
+
+    void on_action_create_torrent_triggered();
 
 private:
     Ui::MainWindow *ui_;

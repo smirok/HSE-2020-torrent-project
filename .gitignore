@@ -1,2 +1,3 @@
 .idea
 cmake-build-debug
+gui/torrent_gui/torrent_gui.pro.user

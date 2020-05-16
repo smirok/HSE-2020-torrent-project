@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "maketorrentwindow.h"
 #include "ui_mainwindow.h"
 
 #include <iostream>
@@ -22,6 +23,7 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QDialog>
+#include <QPalette>
 
 
 // =============================================WORKER=============================================
@@ -81,7 +83,7 @@ void MainWindow::read_database(QString database) {
         QListWidgetItem *item = new QListWidgetItem();
         item->setSizeHint(widget->sizeHint());
 
-        cur_torrens_.emplace_back(filename, location);
+        cur_torrens_.push_back({filename, location, progress});
         ui_->list_cur_torrents->addItem(item);
         ui_->list_cur_torrents->setItemWidget(item, widget);
 
@@ -213,19 +215,35 @@ void MainWindow::on_action_open_torrent_triggered() {
     progress->setValue(0);
     layout->addWidget(label);
     layout->addWidget(progress);
-    layout->setSizeConstraint(QLayout::SetFixedSize);
     widget->setLayout(layout);
 
     auto *item = new QListWidgetItem();
     item->setSizeHint(widget->sizeHint());
 
-    cur_torrens_.emplace_back(path_to_torrent, path_to_save_directory);
+    cur_torrens_.push_back({path_to_torrent, path_to_save_directory, progress});
     ui_->list_cur_torrents->addItem(item);
     ui_->list_cur_torrents->setItemWidget(item, widget);
 
     api_.createDownload(path_to_torrent.toStdString(),
                         path_to_save_directory.toStdString());
+}
 
+
+void MainWindow::on_action_create_torrent_triggered() {
+    MakeTorrentWindow window;
+    window.setModal(true);
+    window.exec();
+
+    if (!window.is_good()) {
+        return;
+    }
+
+    std::string source = window.get_source();
+    std::vector<std::string> trackers = window.get_trackers();
+    std::string save_directory = window.get_save_directory();
+    std::string name = window.get_name();
+
+    api_.makeTorrent(source, trackers, save_directory, name);
 }
 
 
@@ -254,10 +272,15 @@ void MainWindow::on_action_delete_torrent_triggered() {
 
 
 void MainWindow::on_action_pause_torrent_triggered() {
-    int row = ui_->list_cur_torrents->currentRow();
-    std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
-    cur_torrens_[static_cast<size_t>(row)].download_ = false;
+    size_t row = static_cast<size_t>(ui_->list_cur_torrents->currentRow());
+    std::string file_name = cur_torrens_[row].name_.toStdString();
+
+    cur_torrens_[row].download_ = false;
     api_.pauseDownload(file_name);
+
+    QPalette palette = cur_torrens_[row].progress_bar_->palette();
+    palette.setColor(QPalette::Highlight, Qt::red);
+    cur_torrens_[row].progress_bar_->setPalette(palette);
 
     ui_->action_pause_torrent->setEnabled(false);
     ui_->action_start_torrent->setEnabled(true);
@@ -267,8 +290,13 @@ void MainWindow::on_action_pause_torrent_triggered() {
 void MainWindow::on_action_start_torrent_triggered() {
     int row = ui_->list_cur_torrents->currentRow();
     std::string file_name = cur_torrens_[static_cast<size_t>(row)].name_.toStdString();
+
     cur_torrens_[static_cast<size_t>(row)].download_ = true;
     api_.resumeDownload(file_name);
+
+    QPalette palette = cur_torrens_[row].progress_bar_->palette();
+    palette.setColor(QPalette::Highlight, Qt::blue  );
+    cur_torrens_[row].progress_bar_->setPalette(palette);
 
     ui_->action_pause_torrent->setEnabled(true);
     ui_->action_start_torrent->setEnabled(false);
@@ -277,31 +305,32 @@ void MainWindow::on_action_start_torrent_triggered() {
 
 void MainWindow::update_statistic() {
     for (size_t index = 0; index < cur_torrens_.size(); index++) {
-        auto *w = new QWidget();
+        Torrent &torrent = cur_torrens_[index];
+
+        auto *widget = new QWidget();
         auto *layout = new QHBoxLayout();
-        auto *label = new QLabel(cur_torrens_[index].name_);
-        auto *progress = new QProgressBar();
+        auto *label = new QLabel(torrent.name_);
         auto *button = new QPushButton("Open in the folder");
         connect(button, &QPushButton::clicked, this, [=]() {
-            QUrl url_location(cur_torrens_[index].locate_);                       // TODO
+            QUrl url_location(torrent.locate_);
             QDesktopServices::openUrl(url_location);
         });
-        std::string file_name = cur_torrens_[index].name_.toStdString();
-        progress->setValue(static_cast<int>(api_.getInfo(file_name).percent_download));
+        std::string file_name = torrent.name_.toStdString();
+        torrent.progress_bar_->setValue(static_cast<int>(api_.getInfo(file_name).percent_download));
         layout->addWidget(label);
-        layout->addWidget(progress);
+        layout->addWidget(torrent.progress_bar_);
 
-        if (progress->value() == 100) {
-            cur_torrens_[index].finished_ = true;
+        if (torrent.progress_bar_->value() == 100) {
+            torrent.finished_ = true;
             layout->addWidget(button);
         }
 
-        layout->setSizeConstraint( QLayout::SetFixedSize );
-        w->setLayout(layout);
+        layout->setSizeConstraint(QLayout::SetFixedSize);
+        widget->setLayout(layout);
 
         auto *item = ui_->list_cur_torrents->item(static_cast<int>(index));
-        item->setSizeHint(w->sizeHint());
-        ui_->list_cur_torrents->setItemWidget(item, w);
+        item->setSizeHint(widget->sizeHint());
+        ui_->list_cur_torrents->setItemWidget(item, widget);
     }
 
     int row = ui_->list_cur_torrents->currentRow();

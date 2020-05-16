@@ -27,12 +27,15 @@ CONFIG += c++17
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
+        maketorrentwindow.cpp
 
 HEADERS += \
         mainwindow.h \
+        maketorrentwindow.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+        maketorrentwindow.ui
 
 # Client
 
@@ -49,7 +52,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-        resource.qrc
+    toolbar.qrc
 
 unix:!macx: LIBS += -L/usr/local/lib/ -ltorrent-rasterbar
 
@@ -58,9 +61,9 @@ DEPENDPATH += /usr/local/include
 
 unix:!macx: PRE_TARGETDEPS += /usr/local/lib/libtorrent-rasterbar.a
 
-unix:!macx: LIBS += -L/usr/lib/x86_64-linux-gnu/ -lboost_system
+unix: LIBS += -L/usr/lib/x86_64-linux-gnu/ -lboost_system
 
 INCLUDEPATH += /usr/lib/x86_64-linux-gnu
-DEPENDPATH += usr/lib/x86_64-linux-gnu
+DEPENDPATH += /usr/lib/x86_64-linux-gnu
 
-unix:!macx: PRE_TARGETDEPS += /usr/lib/x86_64-linux-gnu/libboost_system.a
+unix: PRE_TARGETDEPS += /usr/lib/x86_64-linux-gnu/libboost_system.a

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MakeTorrentWindow</class>
+ <widget class="QDialog" name="MakeTorrentWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>664</width>
+    <height>474</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>New Torrent</string>
+  </property>
+  <widget class="QLabel" name="label_save">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>90</y>
+     <width>151</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Save to:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_trackers">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>240</y>
+     <width>111</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Trackers:</string>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="radio_button_folder">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>140</y>
+     <width>112</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Source Folder:</string>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="radio_button_file">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>200</y>
+     <width>112</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Source File</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="push_button_folder">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>140</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Select</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="push_button_file">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>190</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Select</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="push_button_save_location">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>80</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Select</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="text_edit_trackers">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>230</y>
+     <width>271</width>
+     <height>111</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QTextBrowser" name="text_browser_save_location">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>80</y>
+     <width>271</width>
+     <height>31</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QTextBrowser" name="text_browser_source">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>150</y>
+     <width>271</width>
+     <height>51</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="push_button_new">
+   <property name="geometry">
+    <rect>
+     <x>560</x>
+     <y>440</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>New</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_name">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>360</y>
+     <width>131</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Name</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="line_edit_name">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>370</y>
+     <width>271</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="push_button_close">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>440</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
