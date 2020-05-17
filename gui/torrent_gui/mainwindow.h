@@ -13,7 +13,7 @@
 #include <atomic>
 
 
-static std::atomic<bool> program_is_running = true;
+static std::atomic<bool> program_is_running{true};
 
 
 class Worker : public QObject {
