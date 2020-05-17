@@ -18,11 +18,25 @@
 #include <unordered_map>
 #include <fstream>
 
+class FilesPicker {
+public:
+    void setMark(int32_t index, bool mark);
+    std::vector<bool> getMarks();
+    std::vector<FileNode> download_holder;
+
+    const int32_t MAX_FILES = 100;
+    const int32_t MAX_LENGTH = 100000;
+};
+
 class API {
 public:
     API();
 
-    void createDownload(const std::string &file_name, const std::string &path); // после конца надо удалить из вектора
+    void prepareDownload(const std::string &file_name, const std::string &path);
+
+    void pickDownloadFiles();
+
+    void createDownload(const std::string &file_name); // после конца надо удалить из вектора
 
     void pauseDownload(const std::string &file_name);
 
@@ -32,10 +46,12 @@ public:
 
     void makeTorrent(const std::string &path_to_files,
                      const std::vector<std::string> &trackers,
-                     const std::string& path_to_torrent_file,
-                     const std::string& torrent_file_name);
+                     const std::string &path_to_torrent_file,
+                     const std::string &torrent_file_name);
 
     TorrentInfo getInfo(const std::string &file_name);
+
+    FilesPicker picker;
 
 private:
     void setPath(const std::string &path);

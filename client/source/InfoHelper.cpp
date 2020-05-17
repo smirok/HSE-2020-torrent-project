@@ -44,7 +44,7 @@ std::string InfoHelper::endTime(int64_t remain, int64_t speed) const noexcept {
     return result;
 }
 
-std::string InfoHelper::getState(const lt::torrent_status::state_t& s) const noexcept {
+std::string InfoHelper::getState(const lt::torrent_status::state_t &s) const noexcept {
     switch (s) {
         case lt::torrent_status::checking_files:
             return "checking";
@@ -75,7 +75,7 @@ std::pair<long double, std::string> InfoHelper::getDownloadedSize(const lt::torr
 
 std::pair<long double, std::string> InfoHelper::getTotalSize(const lt::torrent_status &ts) noexcept {
     if (cachedTotalSize[ts.name].first == 0) {
-        cachedTotalSize[ts.name] = parseSize(ts.total);
+        cachedTotalSize[ts.name] = parseSize(ts.total_wanted);
     }
     return cachedTotalSize[ts.name];
 }
@@ -89,5 +89,33 @@ uint32_t InfoHelper::getDownloadRate(const lt::torrent_status &ts) const noexcep
 }
 
 std::string InfoHelper::getRemainTime(const lt::torrent_status &ts) const noexcept {
-    return endTime(ts.total - ts.total_done, ts.download_rate);
+    return endTime(ts.total_wanted - ts.total_done, ts.download_rate);
+}
+
+void InfoHelper::dfs(std::vector<FileNode> &result, std::set<int32_t> *tree,
+                     std::unordered_map<int32_t, std::string> &conv,
+                     std::vector<uint64_t> &files_size,
+                     int32_t vertex, int32_t lvl, int32_t parent) {
+    if (parent != -1) {
+        result.emplace_back(conv[vertex], lvl, 0, tree[vertex].empty() ? true : false);
+        if (tree[vertex].empty()) {
+            result.back().fullsize_ = files_size[0];
+            files_size.erase(files_size.begin());
+        }
+    }
+    for (auto child : tree[vertex])
+        if (child != parent)
+            dfs(result, tree, conv, files_size, child, lvl + 1, vertex);
+}
+
+void InfoHelper::recalc_size(std::vector<FileNode> &result,
+                             std::set<int32_t> *tree,
+                             int32_t vertex,
+                             int32_t parent) {
+    for (auto child : tree[vertex])
+        if (child != parent) {
+            recalc_size(result, tree, child, vertex);
+        }
+    if (parent != -1 && parent - 1 >= 0)
+        result[parent - 1].fullsize_ += result[vertex - 1].fullsize_;
 }
