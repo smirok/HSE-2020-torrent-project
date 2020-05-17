@@ -44,7 +44,7 @@ namespace UDP_server {
         ssize_t message_length = recvfrom(socketfd_,
                                           message.data(),
                                           PACKET_SIZE,
-                                          MSG_WAITALL, //wtf!?
+                                          0,
                                           reinterpret_cast<sockaddr *>(&client_endpoint),
                                           &client_endpoint_size);
 
@@ -60,7 +60,7 @@ namespace UDP_server {
         ssize_t message_length = sendto(socketfd_,
                                         message.data(),
                                         message.size(),
-                                        MSG_CONFIRM, //wtf!?
+                                        0,
                                         reinterpret_cast<const sockaddr *>(&client_endpoint),
                                         client_endpoint_size);
         if (message_length < 0) {
@@ -315,7 +315,7 @@ namespace UDP_server {
             }
         }
         info_message << " from " << std::string(inet_ntoa(client_endpoint.sin_addr))
-                     << " " << client_endpoint.sin_port << '\n';
+                     << " " << client_endpoint.sin_port;
 
         std::cout << info_message.str() << std::endl;
     }
@@ -348,7 +348,7 @@ namespace UDP_server {
         info_message << "[ " << response.peers.size() << " peer in the list ]";
 
         info_message << " to " << std::string(inet_ntoa(client_endpoint.sin_addr))
-                     << " " << client_endpoint.sin_port << '\n';
+                     << " " << client_endpoint.sin_port;
 
         std::cout << info_message.str() << std::endl;
     }
