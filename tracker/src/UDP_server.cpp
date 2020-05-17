@@ -49,6 +49,10 @@ namespace UDP_server {
                                           &client_endpoint_size);
 
         if (message_length < 0) {
+            if (errno == EINTR) {
+                std::cerr << "___EINTR___\n";
+                return;
+            }
             std::cerr << "##ERROR## Server::receive_packet(...): recvfrom failed\n";
             return;
         }
