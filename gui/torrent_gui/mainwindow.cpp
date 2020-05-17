@@ -195,6 +195,9 @@ MainWindow::~MainWindow() {
 
 void MainWindow::on_action_open_torrent_triggered() {
     QString path_to_torrent = QFileDialog::getOpenFileName(this, "Select the torrent file", "/home", "*.torrent");
+    if (path_to_torrent.isEmpty()) {
+        return;
+    }
     QFileInfo torrent_file(path_to_torrent);
     if (!torrent_file.isReadable()) {
         QMessageBox::warning(this, "WARNING", "This is not a readable file");
@@ -202,6 +205,9 @@ void MainWindow::on_action_open_torrent_triggered() {
     }
 
     QString path_to_save_directory = QFileDialog::getExistingDirectory(this, "Select the save directory", "/home");
+    if (path_to_save_directory.isEmpty()) {
+        return;
+    }
     QFileInfo save_directory(path_to_save_directory);
     if (!save_directory.isWritable()) {
         QMessageBox::warning(this, "WARNING", "This is not a writable directory");
@@ -347,6 +353,13 @@ void MainWindow::show_context_menu(const QPoint &pos) {
     QMenu menu;
     menu.addAction("Delete",  this, SLOT(on_action_delete_torrent_triggered()));
     menu.addAction("Information",  this, SLOT(on_action_delete_torrent_triggered()));
+
+    if (ui_->list_cur_torrents->currentRow() == -1) {
+        for (auto *element : menu.actions()) {
+            element->setEnabled(false);
+        }
+    }
+
     menu.exec(point);
 }
 
