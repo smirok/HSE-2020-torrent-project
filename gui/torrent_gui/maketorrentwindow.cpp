@@ -15,6 +15,8 @@ MakeTorrentWindow::MakeTorrentWindow(QWidget *parent) : QDialog(parent), ui_(new
     ui_->radio_button_file->setChecked(true);
     ui_->push_button_folder->setEnabled(false);
     ui_->push_button_file->setEnabled(true);
+
+    this->setFixedSize(this->width(), this->height());
 }
 
 
