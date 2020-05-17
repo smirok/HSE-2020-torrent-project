@@ -6,10 +6,10 @@
 
 namespace po = boost::program_options;
 
-static void sig_handler(int sig) {
-    (void)sig;
-    UDP_server::Server::in_process = false;
-}
+//static void sig_handler(int sig) {
+//    (void)sig;
+//    UDP_server::Server::in_process = false;
+//}
 
 int main(int argc, char *argv[]) {
     po::options_description description("Allowed options");
@@ -30,15 +30,14 @@ int main(int argc, char *argv[]) {
 
     DataBase::TorrentDataBase db;
     boost::asio::io_context io_context;
-    UDP_server::Server server(io_context,
-                              db,
+    UDP_server::Server server(db,
                               options["port"].as<uint16_t>(),
                               options["interval"].as<int32_t>(),
                               !options["silent"].empty());
 
-    struct sigaction act{};
-    act.sa_handler = sig_handler;
-    sigaction(SIGINT, &act, nullptr);
+//    struct sigaction act{};
+//    act.sa_handler = sig_handler;
+//    sigaction(SIGINT, &act, nullptr);
     server.start();
 
     return 0;
