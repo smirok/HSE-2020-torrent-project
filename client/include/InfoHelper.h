@@ -8,11 +8,11 @@
 #include "libtorrent/torrent_status.hpp"
 
 struct FileNode {
-    FileNode(std::string_view name, int32_t level, bool is_marked, bool is_leaf) :
+    FileNode(const std::string& name, int32_t level, bool is_marked, bool is_leaf) :
             name_(name), level_(level), is_marked_(is_marked), is_leaf_(is_leaf) {
     }
 
-    std::string_view name_;
+    std::string name_;
     int32_t level_;
     bool is_marked_;
     bool is_leaf_ = false;
@@ -51,9 +51,6 @@ public:
     void recalc_size(std::vector<FileNode>& result,
                      std::set<int32_t> *tree,
                      int32_t vertex, int32_t parent = -1);
-
-private:
-    std::unordered_map<std::string, std::pair<long double, std::string>> cachedTotalSize;
 };
 
 struct TorrentInfo {
@@ -68,7 +65,7 @@ struct TorrentInfo {
     friend std::ostream &operator<<(std::ostream &out, const TorrentInfo &ti) {
         out << ti.state << " : " << ti.file_name <<
             "   " << ti.downloaded_size.first << ti.downloaded_size.second << " of "
-            << ti.downloaded_size.first << ti.total_size.second << "\n";
+            << ti.total_size.first << ti.total_size.second << "\n";
         out << ti.download_rate << " " << ti.percent_download << " " << ti.remain_time << "\n";
         return out;
     }

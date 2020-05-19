@@ -74,10 +74,7 @@ std::pair<long double, std::string> InfoHelper::getDownloadedSize(const lt::torr
 }
 
 std::pair<long double, std::string> InfoHelper::getTotalSize(const lt::torrent_status &ts) noexcept {
-    if (cachedTotalSize[ts.name].first == 0) {
-        cachedTotalSize[ts.name] = parseSize(ts.total_wanted);
-    }
-    return cachedTotalSize[ts.name];
+    return parseSize(ts.total_wanted);
 }
 
 uint32_t InfoHelper::getPercentDownloadedSize(const lt::torrent_status &ts) const noexcept {
