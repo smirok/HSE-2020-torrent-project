@@ -326,6 +326,8 @@ void MainWindow::update_statistic() {
         layout->addWidget(label);
         layout->addWidget(torrent.progress_bar_);
 
+        std::cerr << file_name << " -- " << api_.getInfo(file_name).download_rate << std::endl;
+
         if (torrent.progress_bar_->value() == 100) {
             torrent.finished_ = true;
             layout->addWidget(button);

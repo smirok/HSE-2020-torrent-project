@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>TorrentX</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resource.qrc">
+    <normaloff>:/icon/img/icon.jpg</normaloff>:/icon/img/icon.jpg</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
@@ -67,7 +71,7 @@
   <action name="action_open_torrent">
    <property name="icon">
     <iconset resource="resource.qrc">
-     <normaloff>:/resource/img/open_torrent.png</normaloff>:/resource/img/open_torrent.png</iconset>
+     <normaloff>:/action/img/open_torrent.png</normaloff>:/action/img/open_torrent.png</iconset>
    </property>
    <property name="text">
     <string>Open</string>
@@ -76,7 +80,7 @@
   <action name="action_delete_torrent">
    <property name="icon">
     <iconset resource="resource.qrc">
-     <normaloff>:/resource/img/delete_torrent.png</normaloff>:/resource/img/delete_torrent.png</iconset>
+     <normaloff>:/action/img/delete_torrent.png</normaloff>:/action/img/delete_torrent.png</iconset>
    </property>
    <property name="text">
     <string>Delete</string>
@@ -91,7 +95,7 @@
    </property>
    <property name="icon">
     <iconset resource="resource.qrc">
-     <normaloff>:/resource/img/create_torrent.png</normaloff>:/resource/img/create_torrent.png</iconset>
+     <normaloff>:/action/img/create_torrent.png</normaloff>:/action/img/create_torrent.png</iconset>
    </property>
    <property name="text">
     <string>Create</string>
@@ -100,7 +104,7 @@
   <action name="action_pause_torrent">
    <property name="icon">
     <iconset resource="resource.qrc">
-     <normaloff>:/resource/img/pause_torrent.png</normaloff>:/resource/img/pause_torrent.png</iconset>
+     <normaloff>:/action/img/pause_torrent.png</normaloff>:/action/img/pause_torrent.png</iconset>
    </property>
    <property name="text">
     <string>Pause</string>
@@ -112,7 +116,7 @@
   <action name="action_start_torrent">
    <property name="icon">
     <iconset resource="resource.qrc">
-     <normaloff>:/resource/img/play_torrent.png</normaloff>:/resource/img/play_torrent.png</iconset>
+     <normaloff>:/action/img/play_torrent.png</normaloff>:/action/img/play_torrent.png</iconset>
    </property>
    <property name="text">
     <string>Start</string>

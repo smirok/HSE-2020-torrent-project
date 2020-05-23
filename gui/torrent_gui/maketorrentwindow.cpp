@@ -13,10 +13,9 @@ MakeTorrentWindow::MakeTorrentWindow(QWidget *parent) : QDialog(parent), ui_(new
     ui_->setupUi(this);
     ui_->radio_button_folder->setChecked(false);
     ui_->radio_button_file->setChecked(true);
-    ui_->push_button_folder->setEnabled(false);
-    ui_->push_button_file->setEnabled(true);
 
     this->setFixedSize(this->width(), this->height());
+
 }
 
 
@@ -28,21 +27,45 @@ MakeTorrentWindow::~MakeTorrentWindow() {
 void MakeTorrentWindow::on_radio_button_folder_clicked() {
     ui_->radio_button_folder->setChecked(true);
     ui_->radio_button_file->setChecked(false);
-    ui_->push_button_folder->setEnabled(true);
-    ui_->push_button_file->setEnabled(false);
 }
 
 
 void MakeTorrentWindow::on_radio_button_file_clicked() {
     ui_->radio_button_folder->setChecked(false);
     ui_->radio_button_file->setChecked(true);
-    ui_->push_button_folder->setEnabled(false);
-    ui_->push_button_file->setEnabled(true);
+}
+
+
+void MakeTorrentWindow::on_push_button_source_clicked() {
+    QString source_type;
+    if (ui_->radio_button_file->isChecked()) {
+        source_type = "file";
+        path_to_source_ = QFileDialog::getOpenFileName(this, "Select the source file", "/home");
+    } else {
+        source_type = "folder";
+        path_to_source_ = QFileDialog::getExistingDirectory(this, "Select the source folder", "/home");
+    }
+
+    if (path_to_source_.isEmpty()) {
+        return;
+    }
+
+    QFileInfo source_file(path_to_source_);
+    if (!source_file.isReadable()) {
+        QMessageBox::warning(this, "WARNING", "This is not a readable " + source_type);
+        return;
+    }
+
+    ui_->text_browser_source->setText(path_to_source_);
 }
 
 
 void MakeTorrentWindow::on_push_button_save_location_clicked() {
     path_to_save_directory_ = QFileDialog::getExistingDirectory(this, "Select the save directory", "/home");
+
+    if (path_to_save_directory_.isEmpty()) {
+        return;
+    }
 
     QFileInfo save_directory(path_to_save_directory_);
     if (!save_directory.isWritable()) {
@@ -51,32 +74,6 @@ void MakeTorrentWindow::on_push_button_save_location_clicked() {
     }
 
     ui_->text_browser_save_location->setText(path_to_save_directory_);
-}
-
-
-void MakeTorrentWindow::on_push_button_folder_clicked() {
-    path_to_source_ = QFileDialog::getExistingDirectory(this, "Select the source folder", "/home");
-
-    QFileInfo source_folder(path_to_source_);
-    if (!source_folder.isReadable()) {
-        QMessageBox::warning(this, "WARNING", "This is not a readable directory");
-        return;
-    }
-
-    ui_->text_browser_source->setText(path_to_source_);
-}
-
-
-void MakeTorrentWindow::on_push_button_file_clicked() {
-    path_to_source_ = QFileDialog::getOpenFileName(this, "Select the source file", "/home");
-
-    QFileInfo source_file(path_to_source_);
-    if (!source_file.isReadable()) {
-        QMessageBox::warning(this, "WARNING", "This is not a readable file");
-        return;
-    }
-
-    ui_->text_browser_source->setText(path_to_source_);
 }
 
 
