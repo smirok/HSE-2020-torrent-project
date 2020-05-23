@@ -77,7 +77,7 @@ void API::pickDownloadFiles() { // переделать на string_view
 void FilesPicker::setMark(int32_t index, bool mark) {
     download_holder[index].is_marked_ = mark;
     int32_t picked_level = download_holder[index].level_;
-    int32_t current_index = --index;
+    int32_t current_index = index-1;
 
     while (download_holder[++index].level_ > picked_level &&
             static_cast<unsigned long>(index) < download_holder.size()) {
