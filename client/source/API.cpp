@@ -86,7 +86,7 @@ void FilesPicker::setMark(int32_t index, bool mark) {
 
     if (!mark) {
         while (current_index >= 0) {
-            if (download_holder[current_index].level_ > picked_level) {
+            if (download_holder[current_index].level_ < picked_level) {
                 download_holder[current_index].is_marked_ = mark;
                 picked_level = download_holder[current_index].level_;
             }
