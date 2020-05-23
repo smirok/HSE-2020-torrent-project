@@ -52,40 +52,47 @@ namespace DataBase {
         auto &torrent = torrents_[info_hash];
         auto old_peer_ptr = torrent.all_peers.find(peer);
 
-        if (event != EventType::STARTED && old_peer_ptr == torrent.all_peers.end()) {
-            return "Peer not in the list";
-        }
         if (event == EventType::NONE) {
             //nothing
         }
         if (event == EventType::COMPLETED) {
-            if (old_peer_ptr->completed) {
-                return "Already completed";
-            }
-            if (peer.left != 0) {
-                return "Not completed actually";
-            }
-            torrent.seeders++;
-            torrent.downloads++;
-            torrent.leechers--;
+            if (torrent.all_peers.count(peer) != 0) {
+                if (peer.left != 0) {
+                    return "Not completed actually";
+                }
 
-            auto new_peer = *old_peer_ptr;
-            new_peer.completed = true;
+                if (!old_peer_ptr->completed) {
+                    torrent.seeders++;
+                    torrent.downloads++;
+                    torrent.leechers--;
 
-            torrent.all_peers.erase(old_peer_ptr);
-            torrent.all_peers.insert(new_peer);
+                    auto new_peer = *old_peer_ptr;
+                    new_peer.completed = true;
+
+                    torrent.all_peers.erase(old_peer_ptr);
+                    torrent.all_peers.insert(new_peer);
+                }
+            }
         }
         if (event == EventType::STARTED) {
-            torrent.leechers++;
-            torrent.all_peers.insert(peer);
+            if (torrent.all_peers.count(peer) == 0) {
+                if (peer.left != 0) {
+                    torrent.leechers++;
+                } else {
+                    torrent.seeders++;
+                }
+                torrent.all_peers.insert(peer);
+            }
         }
         if (event == EventType::STOPPED) {
-            if (old_peer_ptr->completed) {
-                torrent.seeders--;
-            } else {
-                torrent.leechers--;
+            if (torrent.all_peers.count(peer) != 0) {
+                if (old_peer_ptr->completed) {
+                    torrent.seeders--;
+                } else {
+                    torrent.leechers--;
+                }
+                torrent.all_peers.erase(old_peer_ptr);
             }
-            torrent.all_peers.erase(old_peer_ptr);
         }
 
         return "";
