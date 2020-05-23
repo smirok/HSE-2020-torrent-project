@@ -63,8 +63,8 @@ namespace UDP_server {
     public:
         Server(DataBase::TorrentDataBase &db, uint16_t port, int32_t request_interval, bool silent_mode);
 
-        void receive_packet(std::vector<uint8_t> &message, sockaddr_in &client_endpoint) const;
-        void send_packet(const std::vector<uint8_t> &message, const sockaddr_in &client_endpoint) const;
+        int receive_packet(std::vector<uint8_t> &message, sockaddr_in &client_endpoint) const;
+        int send_packet(const std::vector<uint8_t> &message, const sockaddr_in &client_endpoint) const;
 
         void start();
         void process_request(std::vector<uint8_t> message, sockaddr_in client_endpoint);

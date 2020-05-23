@@ -14,9 +14,9 @@ static void sig_handler(int sig) {
 int main(int argc, char *argv[]) {
     po::options_description description("Allowed options");
     description.add_options()
-            ("help,h", "produce help message")
-            ("port,p", po::value<uint16_t>()->default_value(8000), "set servers port, default = 8000")
-            ("interval,i", po::value<int32_t>()->default_value(10), "set request interval for client (in seconds), default = 10")
+            ("help,h", "show help message")
+            ("port,p", po::value<uint16_t>()->default_value(8000), "set servers port")
+            ("interval,i", po::value<int32_t>()->default_value(10), "set request interval for client (in seconds)")
             ("silent,s", "disable info messages about requests");
 
     po::variables_map options;
@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
     struct sigaction act{};
     act.sa_handler = sig_handler;
     sigaction(SIGINT, &act, nullptr);
+
     server.start();
 
     return 0;

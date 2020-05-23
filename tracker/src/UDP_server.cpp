@@ -11,13 +11,14 @@ namespace UDP_server {
     std::atomic<bool> Server::in_process = true;
 
     Server::Server(DataBase::TorrentDataBase &db, uint16_t port, int32_t request_interval, bool silent_mode) :
-            request_interval_(request_interval), silent_mode_(silent_mode), db_(db) {
+            request_interval_(request_interval), silent_mode_(silent_mode), db_(db)
+    {
         if ((socketfd_ = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
             throw std::runtime_error("Server(): socket creation failed");
         }
         memset(&server_endpoint_, 0, sizeof(server_endpoint_));
         // Filling server information
-        server_endpoint_.sin_family    = AF_INET; // IPv4
+        server_endpoint_.sin_family = AF_INET; // IPv4
         server_endpoint_.sin_addr.s_addr = INADDR_ANY;
         server_endpoint_.sin_port = htons(port);
 
@@ -32,12 +33,13 @@ namespace UDP_server {
         sockaddr_in client_endpoint;
 
         while (in_process) {
-            receive_packet(message, client_endpoint);
-            process_request(std::move(message), client_endpoint);
+            if (receive_packet(message, client_endpoint) == 0) {
+                process_request(std::move(message), client_endpoint);
+            }
         }
     }
 
-    void Server::receive_packet(std::vector<uint8_t> &message, sockaddr_in &client_endpoint) const {
+    int Server::receive_packet(std::vector<uint8_t> &message, sockaddr_in &client_endpoint) const {
         message.assign(PACKET_SIZE, 0);
         socklen_t client_endpoint_size = sizeof(client_endpoint);
 
@@ -48,18 +50,18 @@ namespace UDP_server {
                                           reinterpret_cast<sockaddr *>(&client_endpoint),
                                           &client_endpoint_size);
 
-        if (message_length < 0) {
-            if (errno == EINTR) {
-                std::cerr << "___EINTR___\n";
-                return;
-            }
-            std::cerr << "##ERROR## Server::receive_packet(...): recvfrom failed\n";
-            return;
+        if (message_length < 0 && errno == EINTR) {
+            return errno;
+        }
+        if (message_length < 0 && errno != EINTR) {
+            std::cerr << "##ERROR## Server::receive_packet(...): recvfrom failed [errno == " << errno << "]\n";
+            return errno;
         }
         message.resize(message_length);
+        return 0;
     }
 
-    void Server::send_packet(const std::vector<uint8_t> &message, const sockaddr_in &client_endpoint) const {
+    int Server::send_packet(const std::vector<uint8_t> &message, const sockaddr_in &client_endpoint) const {
         socklen_t client_endpoint_size = sizeof(client_endpoint);
         ssize_t message_length = sendto(socketfd_,
                                         message.data(),
@@ -67,10 +69,15 @@ namespace UDP_server {
                                         0,
                                         reinterpret_cast<const sockaddr *>(&client_endpoint),
                                         client_endpoint_size);
-        if (message_length < 0) {
-            //throw std::runtime_error("Server::send_packet(...): sendto failed");
-            std::cerr << "##ERROR## Server::send_packet(...): sendto failed\n";
+
+        if (message_length < 0 && errno == EINTR) {
+            return errno;
         }
+        if (message_length < 0 && errno != EINTR) {
+            std::cerr << "##ERROR## Server::send_packet(...): sendto failed [errno == " << errno << "]\n";
+            return errno;
+        }
+        return 0;
     }
 
     void Server::process_request(std::vector<uint8_t> message, sockaddr_in client_endpoint) {
@@ -249,7 +256,6 @@ namespace UDP_server {
 
         return response;
     }
-
 
     Response Server::handle_scrape(const Request &request) {
         Response response;
