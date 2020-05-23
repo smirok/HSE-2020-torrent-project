@@ -13,9 +13,8 @@ TEST(DownloadByParts, check){
     API api;
     api.prepareDownload(torrent_pack[0].first,torrent_pack[0].second);
     api.pickDownloadFiles();
-    api.picker.setMark(4,true);
+    api.picker.setMark(0,true);
     api.picker.setMark(6,true);
-    //exit(0);
     api.createDownload(torrent_pack[0].first);
     while (api.getInfo(torrent_pack[0].first).percent_download <= 20){
         std::cout << api.getInfo(torrent_pack[0].first) << "\n";

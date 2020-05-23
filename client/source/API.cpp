@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include <thread>
+#include<thread>
 #include "API.h"
 #include "InfoHelper.h"
 
@@ -76,9 +76,10 @@ void API::pickDownloadFiles() { // переделать на string_view
 
 void FilesPicker::setMark(int32_t index, bool mark) {
     download_holder[index].is_marked_ = mark;
-    int32_t picked_level = download_holder[index].is_marked_;
+    int32_t picked_level = download_holder[index].level_;
 
-    while (download_holder[++index].level_ < picked_level) {
+    while (download_holder[++index].level_ > picked_level &&
+            static_cast<unsigned long>(index) < download_holder.size()) {
         download_holder[index].is_marked_ = mark;
     }
 }
