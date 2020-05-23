@@ -103,17 +103,6 @@ void FilesPicker::setMark(int32_t index, bool mark) {
         }
         --current_index;
     }
-
-
-    if (mark) {
-        uint32_t count_of_flags = 0;
-        for (const auto &object : download_holder)
-            count_of_flags += object.is_marked_;
-
-        for (int i = download_holder.size() - 1; i >= 0; i--) {
-            if ()
-        }
-    }
 }
 
 std::vector<bool> FilesPicker::getMarks() {
