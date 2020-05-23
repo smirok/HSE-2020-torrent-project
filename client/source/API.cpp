@@ -77,29 +77,43 @@ void API::pickDownloadFiles() { // переделать на string_view
 void FilesPicker::setMark(int32_t index, bool mark) {
     download_holder[index].is_marked_ = mark;
     int32_t picked_level = download_holder[index].level_;
-    int32_t current_index = index-1;
+    int32_t current_index = index - 1;
 
     while (download_holder[++index].level_ > picked_level &&
-            static_cast<unsigned long>(index) < download_holder.size()) {
+           static_cast<unsigned long>(index) < download_holder.size()) {
         download_holder[index].is_marked_ = mark;
     }
 
-    if (!mark) {
-        while (current_index >= 0) {
-            if (download_holder[current_index].level_ < picked_level) {
+    while (current_index >= 0) {
+        if (download_holder[current_index].level_ < picked_level) {
+            if (!mark)
                 download_holder[current_index].is_marked_ = mark;
-                picked_level = download_holder[current_index].level_;
+            else {
+                uint32_t temp_index = current_index+1;
+                uint32_t subtree_flags = 0;
+                while (temp_index < download_holder.size() &&
+                        download_holder[temp_index].level_ > download_holder[current_index].level_) {
+                    if (download_holder[temp_index++].is_marked_)
+                        subtree_flags++;
+                }
+                if (subtree_flags == temp_index - current_index - 1)
+                    download_holder[current_index].is_marked_ = mark;
             }
-            --current_index;
+            picked_level = download_holder[current_index].level_;
         }
+        --current_index;
     }
 
-    uint32_t count_of_flags = 0;
-    for (const auto& object : download_holder)
-        count_of_flags += object.is_marked_;
 
-    if (count_of_flags == download_holder.size() - 1)
-        download_holder[0].is_marked_ = true;
+    if (mark) {
+        uint32_t count_of_flags = 0;
+        for (const auto &object : download_holder)
+            count_of_flags += object.is_marked_;
+
+        for (int i = download_holder.size() - 1; i >= 0; i--) {
+            if ()
+        }
+    }
 }
 
 std::vector<bool> FilesPicker::getMarks() {
