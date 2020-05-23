@@ -28,7 +28,7 @@ namespace UDP_server {
         int32_t num_want;
 
         uint16_t port;
-        std::string error_message;
+        std::string_view error_message;
     };
 
     class Response {
@@ -53,7 +53,7 @@ namespace UDP_server {
         std::vector<Scrape> scrape_info;
 
         //action == 3
-        std::string error_message;
+        std::string_view error_message;
 
         DataBase::Peer sender;
     };

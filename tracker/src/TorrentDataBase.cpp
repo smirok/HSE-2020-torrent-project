@@ -48,26 +48,22 @@ namespace DataBase {
         return peers;
     }
 
-    void TorrentDataBase::update_peer_list(const Hash_t &info_hash, const Peer &peer, EventType event) {
+    std::string_view TorrentDataBase::update_peer_list(const Hash_t &info_hash, const Peer &peer, EventType event) {
         auto &torrent = torrents_[info_hash];
         auto old_peer_ptr = torrent.all_peers.find(peer);
 
         if (event != EventType::STARTED && old_peer_ptr == torrent.all_peers.end()) {
-            std::cerr << "TorrentDataBase::update_peer_list: peer not in the list\n";
-            //should send error
-            return;
+            return "Peer not in the list";
         }
         if (event == EventType::NONE) {
             //nothing
         }
         if (event == EventType::COMPLETED) {
             if (old_peer_ptr->completed) {
-                std::cerr << "TorrentDataBase::update_peer_list: already completed\n";
-                //should send error
+                return "Already completed";
             }
             if (peer.left != 0) {
-                std::cerr << "TorrentDataBase::update_peer_list: not completed actualy\n";
-                //should send error
+                return "Not completed actually";
             }
             torrent.seeders++;
             torrent.downloads++;
@@ -91,6 +87,8 @@ namespace DataBase {
             }
             torrent.all_peers.erase(old_peer_ptr);
         }
+
+        return "";
     }
 
 }

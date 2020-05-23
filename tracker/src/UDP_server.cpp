@@ -252,8 +252,12 @@ namespace UDP_server {
         response.seeders = db_.count_seeders(info_hash);
         response.peers = db_.get_peer_list(info_hash, request.num_want);
 
-        db_.update_peer_list(info_hash, request.sender, request.event);
-
+        auto error = db_.update_peer_list(info_hash, request.sender, request.event);
+        if (error != "") {
+            Request bad_request = request;
+            bad_request.error_message = error;
+            return handle_error(bad_request);
+        }
         return response;
     }
 
@@ -325,7 +329,7 @@ namespace UDP_server {
             }
         }
         info_message << " from " << std::string(inet_ntoa(client_endpoint.sin_addr))
-                     << " " << client_endpoint.sin_port;
+                     << ":" << client_endpoint.sin_port;
 
         std::cout << info_message.str() << std::endl;
     }
@@ -352,13 +356,13 @@ namespace UDP_server {
         }
 
         if (response.action == DataBase::ActionType::ERROR) {
-            info_message << response.error_message << " ";
+            info_message << "(" <<  response.error_message << ") ";
         }
 
         info_message << "[ " << response.peers.size() << " peer in the list ]";
 
         info_message << " to " << std::string(inet_ntoa(client_endpoint.sin_addr))
-                     << " " << client_endpoint.sin_port;
+                     << ":" << client_endpoint.sin_port;
 
         std::cout << info_message.str() << std::endl;
     }
