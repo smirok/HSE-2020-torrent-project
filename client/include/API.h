@@ -51,6 +51,8 @@ public:
 
     TorrentInfo getInfo(const std::string &file_name);
 
+    std::string getProgress(const std::string &file_name);
+
     FilesPicker picker;
 
 private:

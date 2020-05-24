@@ -61,6 +61,7 @@ struct TorrentInfo {
     std::pair<long double, std::string> total_size;
     std::pair<long double, std::string> downloaded_size;
     std::string state;
+    std::string progressInfo;
 
     friend std::ostream &operator<<(std::ostream &out, const TorrentInfo &ti) {
         out << ti.state << " : " << ti.file_name <<

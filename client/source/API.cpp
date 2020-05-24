@@ -217,6 +217,8 @@ TorrentInfo API::getInfo(const std::string &file_name) {
     ti.downloaded_size = ih.getDownloadedSize(view.session_handles[view.converter[file_name]]);
     ti.file_name = ih.getName(view.session_handles[view.converter[file_name]]);
     ti.percent_download = ih.getPercentDownloadedSize(view.session_handles[view.converter[file_name]]);
+    ti.progressInfo = std::to_string(static_cast<uint64_t>(ti.downloaded_size.first)) + ti.downloaded_size.second + " of " +
+            std::to_string(static_cast<uint64_t>(ti.total_size.first)) + ti.total_size.second;
 
     return ti;
 }
