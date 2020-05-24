@@ -27,15 +27,18 @@ unix:ICON +=
 CONFIG += c++17
 
 SOURCES += \
+        addtorrentwindow.cpp \
         main.cpp \
         mainwindow.cpp \
         maketorrentwindow.cpp
 
 HEADERS += \
+        addtorrentwindow.h \
         mainwindow.h \
         maketorrentwindow.h
 
 FORMS += \
+        addtorrentwindow.ui \
         mainwindow.ui \
         maketorrentwindow.ui
 

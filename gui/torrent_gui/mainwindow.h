@@ -29,17 +29,15 @@ signals:
 
 
 struct Torrent {
-    Torrent(QString name, QString locate, QProgressBar *progress_bar) {
-        name_= name;
-        locate_ = locate;
-        progress_bar_ = progress_bar;
-    }
+    Torrent(QString name, QString locate, QString marks, QProgressBar *progress_bar) : name_(name), locate_(locate),
+                                                                                       marks_(marks), progress_bar_(progress_bar) {}
     QString name_;
     QString locate_;
+    QString marks_;
+    QProgressBar *progress_bar_;
+
     bool download_ = true;
     bool finished_ = false;
-
-    QProgressBar *progress_bar_ = nullptr;
 };
 
 
@@ -57,16 +55,18 @@ public:
 
 private slots:
     void on_action_open_torrent_triggered();
+    void on_action_create_torrent_triggered();
     void on_action_delete_torrent_triggered();
     void on_action_pause_torrent_triggered();
     void on_action_start_torrent_triggered();
 
+    void open_in_folder();
     void update_statistic();
     void show_context_menu(const QPoint &point);
 
     void on_list_cur_torrents_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
 
-    void on_action_create_torrent_triggered();
+
 
 private:
     Ui::MainWindow *ui_;
