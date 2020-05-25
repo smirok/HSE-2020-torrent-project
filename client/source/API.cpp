@@ -33,14 +33,14 @@ void API::prepareDownload(const std::string &file_name, const std::string &path)
     setPath(path);
 }
 
-void API::pickDownloadFiles() { // переделать на string_view
+void API::pickDownloadFiles() {
 
     lt::file_storage const &files = p.ti->files();
     std::string sep = "/";
 
     std::unordered_map<std::string, int32_t> is_in_tree;
     std::unordered_map<int32_t, std::string> number_to_name;
-    std::set<int32_t> tree[picker.MAX_FILES]; // 100 - кол-во файлов
+    std::set<int32_t> tree[picker.MAX_FILES];
     std::vector<uint64_t> files_size;
 
     int32_t current_number = 1;
@@ -66,7 +66,6 @@ void API::pickDownloadFiles() { // переделать на string_view
             }
 
             name = name.substr(pos + sep.size(), picker.MAX_LENGTH);
-            //name.remove_prefix(pos + sep.size());
         }
     }
 
@@ -138,6 +137,7 @@ void API::createDownload(const std::string &file_name) {
                                                                 object.is_marked_ ? lt::default_priority
                                                                                   : lt::dont_download);
                 }
+                picker.download_holder.clear();
                 break;
             }
         }
@@ -217,7 +217,7 @@ TorrentInfo API::getInfo(const std::string &file_name) {
     ti.downloaded_size = ih.getDownloadedSize(view.session_handles[view.converter[file_name]]);
     ti.file_name = ih.getName(view.session_handles[view.converter[file_name]]);
     ti.percent_download = ih.getPercentDownloadedSize(view.session_handles[view.converter[file_name]]);
-    ti.progressInfo = std::to_string(static_cast<uint64_t>(ti.downloaded_size.first)) + ti.downloaded_size.second + " of " +
+    ti.progress_info = std::to_string(static_cast<uint64_t>(ti.downloaded_size.first)) + ti.downloaded_size.second + " of " +
             std::to_string(static_cast<uint64_t>(ti.total_size.first)) + ti.total_size.second;
 
     return ti;
