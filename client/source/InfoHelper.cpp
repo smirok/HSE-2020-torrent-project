@@ -2,19 +2,19 @@
 
 namespace Time {
     constexpr int64_t DAY = 24 * 60 * 60;
-    constexpr int64_t HOUR = 24 * 60;
+    constexpr int64_t HOUR = 60 * 60;
     constexpr int64_t MINUTE = 60;
 };
 
 namespace MeasureConstants {
-    constexpr uint64_t BYTES_IN_KB = 1 << 10;
-    constexpr uint64_t BYTES_IN_MB = 1 << 20;
-    constexpr uint64_t BYTES_IN_GB = 1 << 30;
+    constexpr uint64_t BYTES_IN_KB = 1'000; //  1 << 10
+    constexpr uint64_t BYTES_IN_MB = 1'000'000; // 1 << 20
+    constexpr uint64_t BYTES_IN_GB = 1'000'000'000; // 1 << 30
     constexpr int32_t CONVERT_LT_PPM = 1e4;
 }
 
 
-std::pair<double, std::string> InfoHelper::parseSize(uint64_t byte_size) const noexcept {
+std::pair<long double, std::string> InfoHelper::parseSize(long double byte_size) const noexcept {
     if (byte_size < MeasureConstants::BYTES_IN_KB)
         return {byte_size, "B"};
     if (byte_size < MeasureConstants::BYTES_IN_MB)
@@ -75,6 +75,8 @@ std::pair<long double, std::string> InfoHelper::getDownloadedSize(const lt::torr
 
 std::pair<long double, std::string> InfoHelper::getTotalSize(const lt::torrent_status &ts) noexcept {
     return parseSize(ts.total_wanted);
+    //std::cout << ts.total_wanted << "\n";
+    //return {ts.total_wanted, "kek"};
 }
 
 uint32_t InfoHelper::getPercentDownloadedSize(const lt::torrent_status &ts) const noexcept {
