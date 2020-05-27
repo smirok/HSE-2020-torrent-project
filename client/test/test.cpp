@@ -10,14 +10,14 @@ std::vector<std::pair<std::string,std::string>> torrent_pack = {
 };
 
 TEST(DownloadByParts, check){
-    TorrentAPI api;
-    api.prepareDownload(torrent_pack[0].first,torrent_pack[0].second);
-    api.pickDownloadFiles();
-    api.picker.setMark(1,true);
-    api.picker.setMark(6,true);
-    api.createDownload(torrent_pack[0].first);
-    while (api.getInfo(torrent_pack[0].first).state_ != "finished"){
-        std::cout << api.getInfo(torrent_pack[0].first) << "\n";
+    TorrentAPI torrent_api;
+    torrent_api.prepareDownload(torrent_pack[0].first, torrent_pack[0].second);
+    torrent_api.pickDownloadFiles();
+    torrent_api.picker.setMark(1, true);
+    torrent_api.picker.setMark(6, true);
+    torrent_api.createDownload(torrent_pack[0].first);
+    while (torrent_api.getInfo(torrent_pack[0].first).state_ != "finished"){
+        std::cout << torrent_api.getInfo(torrent_pack[0].first) << "\n";
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 };
