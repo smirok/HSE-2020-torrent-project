@@ -7,7 +7,7 @@
 
 class Linker {
 public:
-    void updateTorrents(const std::vector<lt::torrent_status>& st);
+    void updateTorrents(const std::vector<lt::torrent_status> &st);
 
     void updateCurrentTorrents();
 

@@ -20,7 +20,7 @@ void Linker::updateTorrents(const std::vector<lt::torrent_status> &statuses) {
 
 void Linker::updateCurrentTorrents() {
     current_handles.clear();
-    for (const auto & handle : session_handles) {
+    for (const auto &handle : session_handles) {
         if (handle.first.is_valid())
             current_handles.push_back(std::make_unique<lt::torrent_status const>(handle.second));
     }

@@ -11,7 +11,9 @@
 struct FilesPicker {
 
     void setMark(int32_t index, bool mark);
+
     std::vector<bool> getMarks();
+
     std::vector<FileNode> download_holder;
 
     static constexpr int32_t MAX_FILES = 100;
