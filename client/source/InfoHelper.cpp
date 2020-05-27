@@ -2,19 +2,19 @@
 
 namespace Time {
     constexpr int64_t DAY = 24 * 60 * 60;
-    constexpr int64_t HOUR = 24 * 60;
+    constexpr int64_t HOUR = 60 * 60;
     constexpr int64_t MINUTE = 60;
 };
 
 namespace MeasureConstants {
-    constexpr uint64_t BYTES_IN_KB = 1 << 10;
-    constexpr uint64_t BYTES_IN_MB = 1 << 20;
-    constexpr uint64_t BYTES_IN_GB = 1 << 30;
-    constexpr int32_t CONVERT_LT_PPM = 1e4;
+    constexpr uint64_t BYTES_IN_KB = 1'000;
+    constexpr uint64_t BYTES_IN_MB = 1'000'000;
+    constexpr uint64_t BYTES_IN_GB = 1'000'000'000;
+    constexpr int32_t CONVERT_LT_PPM = 10'000;
 }
 
 
-std::pair<double, std::string> InfoHelper::parseSize(uint64_t byte_size) const noexcept {
+std::pair<long double, std::string> InfoHelper::parseSize(long double byte_size) const noexcept {
     if (byte_size < MeasureConstants::BYTES_IN_KB)
         return {byte_size, "B"};
     if (byte_size < MeasureConstants::BYTES_IN_MB)
@@ -44,7 +44,35 @@ std::string InfoHelper::endTime(int64_t remain, int64_t speed) const noexcept {
     return result;
 }
 
-std::string InfoHelper::getState(const lt::torrent_status::state_t& s) const noexcept {
+void InfoHelper::dfs(std::vector<FileNode> &result, std::set<int32_t> *tree,
+                     std::unordered_map<int32_t, std::string> &conv,
+                     std::vector<uint64_t> &files_size,
+                     int32_t vertex, int32_t lvl, int32_t parent) {
+    if (parent != -1) {
+        result.emplace_back(conv[vertex], lvl, false, tree[vertex].empty());
+        if (tree[vertex].empty()) {
+            result.back().fullsize_ = files_size[0];
+            files_size.erase(files_size.begin());
+        }
+    }
+    for (auto child : tree[vertex])
+        if (child != parent)
+            dfs(result, tree, conv, files_size, child, lvl + 1, vertex);
+}
+
+void InfoHelper::recalcSize(std::vector<FileNode> &result,
+                            std::set<int32_t> *tree,
+                            int32_t vertex,
+                            int32_t parent) {
+    for (auto child : tree[vertex])
+        if (child != parent) {
+            recalcSize(result, tree, child, vertex);
+        }
+    if (parent != -1 && parent - 1 >= 0)
+        result[parent - 1].fullsize_ += result[vertex - 1].fullsize_;
+}
+
+std::string InfoHelper::getState(const lt::torrent_status::state_t &s) const noexcept {
     switch (s) {
         case lt::torrent_status::checking_files:
             return "checking";
@@ -74,10 +102,7 @@ std::pair<long double, std::string> InfoHelper::getDownloadedSize(const lt::torr
 }
 
 std::pair<long double, std::string> InfoHelper::getTotalSize(const lt::torrent_status &ts) noexcept {
-    if (cachedTotalSize[ts.name].first == 0) {
-        cachedTotalSize[ts.name] = parseSize(ts.total);
-    }
-    return cachedTotalSize[ts.name];
+    return parseSize(ts.total_wanted);
 }
 
 uint32_t InfoHelper::getPercentDownloadedSize(const lt::torrent_status &ts) const noexcept {
@@ -89,5 +114,5 @@ uint32_t InfoHelper::getDownloadRate(const lt::torrent_status &ts) const noexcep
 }
 
 std::string InfoHelper::getRemainTime(const lt::torrent_status &ts) const noexcept {
-    return endTime(ts.total - ts.total_done, ts.download_rate);
+    return endTime(ts.total_wanted - ts.total_done, ts.download_rate);
 }

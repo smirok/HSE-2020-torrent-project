@@ -27,12 +27,9 @@ public:
 private slots:
     void on_radio_button_folder_clicked();
     void on_radio_button_file_clicked();
+    void on_push_button_source_clicked();
     void on_push_button_save_location_clicked();
-    void on_push_button_folder_clicked();
-    void on_push_button_file_clicked();
-
     void on_push_button_new_clicked();
-
     void on_push_button_close_clicked();
 
 private:

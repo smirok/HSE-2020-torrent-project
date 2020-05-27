@@ -1,11 +1,11 @@
-#ifndef HSE_2020_TORRENT_PROJECT_VIEW_H
-#define HSE_2020_TORRENT_PROJECT_VIEW_H
+#ifndef HSE_2020_TORRENT_PROJECT_LINKER_H
+#define HSE_2020_TORRENT_PROJECT_LINKER_H
 
 #include <unordered_map>
 #include "libtorrent/fwd.hpp"
 #include "libtorrent/torrent_status.hpp"
 
-class View {
+class Linker {
 public:
     void updateTorrents(const std::vector<lt::torrent_status>& st);
 
@@ -16,4 +16,4 @@ public:
     std::unordered_map<std::string, lt::torrent_handle> converter;
 };
 
-#endif //HSE_2020_TORRENT_PROJECT_VIEW_H
+#endif //HSE_2020_TORRENT_PROJECT_LINKER_H

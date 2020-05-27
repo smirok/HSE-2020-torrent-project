@@ -2,62 +2,81 @@
 #include <vector>
 #include "gtest/gtest.h"
 
-#include "API.h"
-#include "View.h"
+#include "TorrentAPI.h"
+#include "Linker.h"
 
 std::vector<std::pair<std::string,std::string>> torrent_pack = {
-        {"/home/ilya/Game_Dev_Tycoon.torrent", "."},
+        {"/home/ilya/skachat_igru.torrent", "."},
 };
 
-/*TEST(CreateDownload, start){
-    API api;
-    api.createDownload(torrent_pack[0].first,torrent_pack[0].second);
-    while (api.getInfo(torrent_pack[0].first).state != "downloading"){
+TEST(DownloadByParts, check){
+    TorrentAPI torrent_api;
+    torrent_api.prepareDownload(torrent_pack[0].first, torrent_pack[0].second);
+    torrent_api.pickDownloadFiles();
+    torrent_api.picker.setMark(1, true);
+    torrent_api.picker.setMark(6, true);
+    torrent_api.createDownload(torrent_pack[0].first);
+    while (torrent_api.getInfo(torrent_pack[0].first).state_ != "finished"){
+        std::cout << torrent_api.getInfo(torrent_pack[0].first) << "\n";
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    ASSERT_GE(api.getInfo(torrent_pack[0].first).state,"downloading");
+};
+
+TEST(CreateDownload, start){
+    TorrentAPI api;
+    api.prepareDownload(torrent_pack[0].first,torrent_pack[0].second);
+    api.createDownload(torrent_pack[0].first);
+    while (api.getInfo(torrent_pack[0].first).state_ != "downloading"){
+    }
+    ASSERT_GE(api.getInfo(torrent_pack[0].first).state_,"downloading");
 }
 
 TEST(CreateDownload, quarter_of_download){
-    API api;
-    api.createDownload(torrent_pack[0].first,torrent_pack[0].second);
-    while (api.getInfo(torrent_pack[0].first).percent_download <= 25){
+    TorrentAPI api;
+    api.prepareDownload(torrent_pack[0].first,torrent_pack[0].second);
+    api.createDownload(torrent_pack[0].first);
+    while (api.getInfo(torrent_pack[0].first).percent_download_ <= 25){
+        std::cout << api.getInfo(torrent_pack[0].first) << "\n";
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    std::cout << "keker";
-    ASSERT_GE(api.getInfo(torrent_pack[0].first).percent_download, 24);
+    ASSERT_GE(api.getInfo(torrent_pack[0].first).percent_download_, 24);
 }
 
 TEST(CreateDownload, half_of_download){
-    API api;
-    api.createDownload(torrent_pack[0].first,torrent_pack[0].second);
-    while (api.getInfo(torrent_pack[0].first).percent_download <= 50){
+    TorrentAPI api;
+    api.prepareDownload(torrent_pack[0].first,torrent_pack[0].second);
+    api.createDownload(torrent_pack[0].first);
+    while (api.getInfo(torrent_pack[0].first).percent_download_ <= 50){
+        std::cout << api.getInfo(torrent_pack[0].first) << "\n";
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    ASSERT_GE(api.getInfo(torrent_pack[0].first).percent_download, 50);
+    ASSERT_GE(api.getInfo(torrent_pack[0].first).percent_download_, 50);
 }
 
 TEST(CreateDownload, three_quarters_of_download){
-    freopen("output.txt","w",stdout);
-    API api;
-    api.createDownload(torrent_pack[0].first,torrent_pack[0].second);
-    while (api.getInfo(torrent_pack[0].first).percent_download <= 75){
+    TorrentAPI api;
+    api.prepareDownload(torrent_pack[0].first,torrent_pack[0].second);
+    api.createDownload(torrent_pack[0].first);
+    while (api.getInfo(torrent_pack[0].first).percent_download_ <= 75){
+        std::cout << api.getInfo(torrent_pack[0].first) << "\n";
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    ASSERT_GE(api.getInfo(torrent_pack[0].first).percent_download, 75);
+    ASSERT_GE(api.getInfo(torrent_pack[0].first).percent_download_, 75);
 }
 
 TEST(CreateDownload, end_of_download){
-    API api;
-    api.createDownload(torrent_pack[0].first,torrent_pack[0].second);
-    while (api.getInfo(torrent_pack[0].first).state != "finished"){
+    TorrentAPI api;
+    api.prepareDownload(torrent_pack[0].first,torrent_pack[0].second);
+    api.createDownload(torrent_pack[0].first);
+    while (api.getInfo(torrent_pack[0].first).state_ != "finished"){
+        std::cout << api.getInfo(torrent_pack[0].first) << "\n";
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    ASSERT_EQ(api.getInfo(torrent_pack[0].first).state,"finished");
-}*/
+    ASSERT_EQ(api.getInfo(torrent_pack[0].first).state_,"finished");
+}
 
 TEST(makeTorrent, make_torrent) {
-    API api;
+    TorrentAPI api;
     std::vector<std::string> trackers;
     trackers.emplace_back("google/com");
     api.makeTorrent("/home/ilya/for_testing/tester.txt",trackers,

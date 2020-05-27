@@ -22,27 +22,32 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+unix:ICON +=
+
 CONFIG += c++17
 
 SOURCES += \
+        addtorrentwindow.cpp \
         main.cpp \
         mainwindow.cpp \
         maketorrentwindow.cpp
 
 HEADERS += \
+        addtorrentwindow.h \
         mainwindow.h \
         maketorrentwindow.h
 
 FORMS += \
+        addtorrentwindow.ui \
         mainwindow.ui \
         maketorrentwindow.ui
 
 # Client
 
 SOURCES += \
-        $$PWD/../../client/source/API.cpp \
+        $$PWD/../../client/source/TorrentAPI.cpp \
         $$PWD/../../client/source/InfoHelper.cpp \
-        $$PWD/../../client/source/View.cpp
+        $$PWD/../../client/source/Linker.cpp
 
 INCLUDEPATH += $$PWD/../../client/include/
 
@@ -52,7 +57,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    toolbar.qrc
+    resource.qrc
 
 unix:!macx: LIBS += -L/usr/local/lib/ -ltorrent-rasterbar
 
