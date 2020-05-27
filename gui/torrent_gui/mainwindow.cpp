@@ -376,9 +376,27 @@ void MainWindow::update_statistic() {
         layout->addWidget(label);
         layout->addWidget(torrent.progress_bar_);
 
-        std::string memory = api_.getInfo(file_name).progress_info_;
-        auto *memory_label = new QLabel(QString::fromStdString(memory), widget);
-        layout->addWidget(memory_label);
+        if (api_.getInfo(file_name).state_ == "downloading") {
+
+            std::string memory = api_.getInfo(file_name).progress_info_;
+            memory += "   | ";
+            auto *memory_label = new QLabel(QString::fromStdString(memory), widget);
+            layout->addWidget(memory_label);
+
+            std::string time = api_.getInfo(file_name).remain_time_;
+            auto *time_label = new QLabel(widget);
+
+            if (torrent.download_) {
+                time_label->setText(QString::fromStdString(time));
+            } else {
+                time_label->setText("PAUSE");
+            }
+
+            layout->addWidget(time_label);
+
+        }
+
+        //
 
         if (torrent.progress_bar_->value() == 100) {
             torrent.finished_ = true;

@@ -40,18 +40,19 @@ AddTorrentWindow::AddTorrentWindow(QWidget *parent, TorrentAPI &api,
     this->setFixedWidth(this->width());
 
     for (auto element : api.picker.download_holder) {
+
         QString text = QString::fromStdString(element.name_);
         for (int i = 1; i < element.level_; i++) {
             text = "|      " + text;
         }
-        auto *widget1 = new QWidget();
-        auto *label = new QLabel(text);
+        auto *widget1 = new QWidget(this);
+        auto *label = new QLabel(text, widget1);
         auto *layout1 = new QHBoxLayout(widget1);
         layout1->addWidget(label);
         ui_->table_widget->setCellWidget(check_boxes_.size(), 0, widget1);
 
-        auto *widget2 = new QWidget();
-        auto *check_box = new QCheckBox();
+        auto *widget2 = new QWidget(this);
+        auto *check_box = new QCheckBox(widget2);
         check_box->setCheckState(Qt::Unchecked);
         auto *layout2 = new QHBoxLayout(widget2);
         layout2->addWidget(check_box);
