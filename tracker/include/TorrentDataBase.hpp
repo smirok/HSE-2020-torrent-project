@@ -58,7 +58,7 @@ namespace DataBase {
         int32_t count_seeders(const Hash_t &info_hash);
         int32_t count_downloads(const Hash_t &info_hash);
         std::vector<Peer> get_peer_list(const Hash_t &info_hash, int32_t num_want);
-        void update_peer_list(const Hash_t &info_hash, const Peer &peer, EventType event);
+        std::string_view update_peer_list(const Hash_t &info_hash, const Peer &peer, EventType event);
 
     private:
         std::mt19937 random_;

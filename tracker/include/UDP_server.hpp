@@ -1,10 +1,9 @@
 #pragma once
 
-#include <boost/asio.hpp>
+#include <netinet/in.h>
 #include "TorrentDataBase.hpp"
 
 namespace UDP_server {
-    using boost::asio::ip::udp;
     constexpr std::size_t PACKET_SIZE = 1024;
     constexpr std::size_t CONNECT_REQUEST_SIZE = 16;
     constexpr std::size_t ANNOUNCE_REQUEST_SIZE = 98;
@@ -29,7 +28,7 @@ namespace UDP_server {
         int32_t num_want;
 
         uint16_t port;
-        std::string error_message;
+        std::string_view error_message;
     };
 
     class Response {
@@ -54,30 +53,36 @@ namespace UDP_server {
         std::vector<Scrape> scrape_info;
 
         //action == 3
-        std::string error_message;
+        std::string_view error_message;
 
         DataBase::Peer sender;
     };
+
+    using sockaddr_in = struct sockaddr_in;
     class Server {
     public:
-        explicit Server(boost::asio::io_context &io_context,
-                        DataBase::TorrentDataBase &db,
-                        uint16_t port,
-                        int32_t request_interval,
-                        bool silent_mode);
+        Server(DataBase::TorrentDataBase &db, uint16_t port, int32_t request_interval, bool silent_mode);
+
+        int receive_packet(std::vector<uint8_t> &message, sockaddr_in &client_endpoint) const;
+        int send_packet(const std::vector<uint8_t> &message, const sockaddr_in &client_endpoint) const;
+
         void start();
-        void process_request(std::vector<uint8_t> message, udp::endpoint sender_endpoint);
-        static Request parse_UDP_request(const std::vector<uint8_t> &message, const udp::endpoint &ep);
+        void process_request(std::vector<uint8_t> message, sockaddr_in client_endpoint);
+        static Request parse_UDP_request(const std::vector<uint8_t> &message, const sockaddr_in &ep);
         static std::vector<uint8_t> make_UDP_response(const Response &response);
         Response handle_connect(const Request &request);
         Response handle_announce(const Request &request);
         Response handle_scrape(const Request &request);
         Response handle_error(const Request &request);
-        void print_request(const Request &request, const udp::endpoint &sender_endpoint) const;
-        void print_response(const Response &response, const udp::endpoint &sender_endpoint) const;
+        void print_request(const Request &request, const sockaddr_in &client_endpoint) const;
+        void print_response(const Response &response, const sockaddr_in &client_endpoint) const;
+
+        ~Server();
+
         static std::atomic<bool> in_process;
     private:
-        udp::socket socket_;
+        int socketfd_;
+        sockaddr_in server_endpoint_;
         int32_t request_interval_;
         bool silent_mode_;
         DataBase::TorrentDataBase &db_;

@@ -1,55 +1,89 @@
 #include <iostream>
 #include <boost/endian/conversion.hpp>
+#include <atomic>
+#include <sstream>
+#include <arpa/inet.h>
 
 #include "UDP_server.hpp"
 
-/* константы, конфиг?? (как его делатб)
- *
- * Сделать отчёт об ошибках и его отправку доделать
- *
- * Разделить на работу с запросами и базу дынных
- * Aсинхронность
- * HTTP
- * */
-
 namespace UDP_server {
-    using namespace boost::asio;
-    using namespace boost::endian;
 
     std::atomic<bool> Server::in_process = true;
-    Server::Server(boost::asio::io_context &io_context,
-                   DataBase::TorrentDataBase &db,
-                   uint16_t port,
-                   int32_t request_interval,
-                   bool silent_mode) :
-            socket_(io_context, udp::endpoint(udp::v4(), port)),
-            request_interval_(request_interval),
-            silent_mode_(silent_mode),
-            db_(db) {}
+
+    Server::Server(DataBase::TorrentDataBase &db, uint16_t port, int32_t request_interval, bool silent_mode) :
+            request_interval_(request_interval), silent_mode_(silent_mode), db_(db)
+    {
+        if ((socketfd_ = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+            throw std::runtime_error("Server(): socket creation failed");
+        }
+        memset(&server_endpoint_, 0, sizeof(server_endpoint_));
+        // Filling server information
+        server_endpoint_.sin_family = AF_INET; // IPv4
+        server_endpoint_.sin_addr.s_addr = INADDR_ANY;
+        server_endpoint_.sin_port = htons(port);
+
+        // Bind the socket with the server address
+        if (bind(socketfd_, reinterpret_cast<const sockaddr *>(&server_endpoint_), sizeof(server_endpoint_)) < 0){
+            throw std::runtime_error("Server(): bind failed");
+        }
+    }
 
     void Server::start() {
-        socket_.non_blocking(true);
         std::vector<uint8_t> message;
-        udp::endpoint sender_endpoint;
+        sockaddr_in client_endpoint;
+
         while (in_process) {
-            message.assign(PACKET_SIZE, 0);
-            boost::system::error_code error;
-            std::size_t message_length = socket_.receive_from(boost::asio::buffer(message), sender_endpoint, 0, error);
-            if (!error) {
-                message.resize(message_length);//?
-                process_request(std::move(message), std::move(sender_endpoint));
-            } else if (error == boost::asio::error::would_block) {
-                std::this_thread::sleep_for(chrono::microseconds(SLEEP_TIME));
-            } else {
-                throw std::runtime_error("Server::start() socket error\n");
+            if (receive_packet(message, client_endpoint) == 0) {
+                process_request(std::move(message), client_endpoint);
             }
         }
     }
 
-    void Server::process_request(std::vector<uint8_t> message, udp::endpoint sender_endpoint) {
-        Request request = parse_UDP_request(message, sender_endpoint);
+    int Server::receive_packet(std::vector<uint8_t> &message, sockaddr_in &client_endpoint) const {
+        message.assign(PACKET_SIZE, 0);
+        socklen_t client_endpoint_size = sizeof(client_endpoint);
 
-        print_request(request, sender_endpoint);
+        ssize_t message_length = recvfrom(socketfd_,
+                                          message.data(),
+                                          PACKET_SIZE,
+                                          0,
+                                          reinterpret_cast<sockaddr *>(&client_endpoint),
+                                          &client_endpoint_size);
+
+        if (message_length < 0 && errno == EINTR) {
+            return errno;
+        }
+        if (message_length < 0 && errno != EINTR) {
+            std::cerr << "##ERROR## Server::receive_packet(...): recvfrom failed [errno == " << errno << "]\n";
+            return errno;
+        }
+        message.resize(message_length);
+        return 0;
+    }
+
+    int Server::send_packet(const std::vector<uint8_t> &message, const sockaddr_in &client_endpoint) const {
+        socklen_t client_endpoint_size = sizeof(client_endpoint);
+        ssize_t message_length = sendto(socketfd_,
+                                        message.data(),
+                                        message.size(),
+                                        0,
+                                        reinterpret_cast<const sockaddr *>(&client_endpoint),
+                                        client_endpoint_size);
+
+        if (message_length < 0 && errno == EINTR) {
+            return errno;
+        }
+        if (message_length < 0 && errno != EINTR) {
+            std::cerr << "##ERROR## Server::send_packet(...): sendto failed [errno == " << errno << "]\n";
+            return errno;
+        }
+        return 0;
+    }
+
+    void Server::process_request(std::vector<uint8_t> message, sockaddr_in client_endpoint) {
+        Request request = parse_UDP_request(message, client_endpoint);
+
+        print_request(request, client_endpoint);
 
         Response response = Response();
 
@@ -66,14 +100,14 @@ namespace UDP_server {
             response = handle_scrape(request);
         }
 
-        print_response(response, sender_endpoint);
+        print_response(response, client_endpoint);
 
-        socket_.send_to(boost::asio::buffer(make_UDP_response(response)), sender_endpoint);
+        send_packet(make_UDP_response(response), client_endpoint);
     }
 
     template<typename T>
     void load_value(T &value, const uint8_t *&source) { //only for primitive types (8 bytes or less)
-        value = endian_load<T, sizeof(T), order::big>(source);
+        value = boost::endian::endian_load<T, sizeof(T), boost::endian::order::big>(source);
         source += sizeof(T);
     }
 
@@ -85,19 +119,20 @@ namespace UDP_server {
 
     template<typename T>
     void store_value(T value, uint8_t *&destination) { //only for primitive types (8 bytes or less)
-        endian_store<T, sizeof(T), order::big>(destination, value);
+        boost::endian::endian_store<T, sizeof(T), boost::endian::order::big>(destination, value);
         destination += sizeof(T);
     }
 
-    Request Server::parse_UDP_request(const std::vector<uint8_t> &message, const udp::endpoint &sender_endpoint) {
+    Request Server::parse_UDP_request(const std::vector<uint8_t> &message, const sockaddr_in &client_endpoint) {
         Request request;
-        request.sender.ip = sender_endpoint.address().to_v4().to_ulong();
-        request.sender.port = sender_endpoint.port();
+        request.sender.ip = client_endpoint.sin_addr.s_addr;
+        request.sender.port = client_endpoint.sin_port;
 
         const uint8_t *iter = message.data();
 
         if (message.size() < CONNECT_REQUEST_SIZE) {
-            request.error_message = "Bad request: request_size=" + std::to_string(message.size()) + "  less than CONNECT_REQUEST_SIZE";
+            request.error_message =
+                    "Bad request: request_size=" + std::to_string(message.size()) + "  less than CONNECT_REQUEST_SIZE";
             return request;
         }
 
@@ -217,8 +252,12 @@ namespace UDP_server {
         response.seeders = db_.count_seeders(info_hash);
         response.peers = db_.get_peer_list(info_hash, request.num_want);
 
-        db_.update_peer_list(info_hash, request.sender, request.event);
-
+        auto error = db_.update_peer_list(info_hash, request.sender, request.event);
+        if (error != "") {
+            Request bad_request = request;
+            bad_request.error_message = error;
+            return handle_error(bad_request);
+        }
         return response;
     }
 
@@ -249,8 +288,7 @@ namespace UDP_server {
         return response;
     }
 
-
-    void Server::print_request(const Request &request, const udp::endpoint &sender_endpoint) const {
+    void Server::print_request(const Request &request, const sockaddr_in &client_endpoint) const {
         if (silent_mode_) {
             return;
         }
@@ -290,13 +328,13 @@ namespace UDP_server {
                     info_message << " [ERROR not DataBase::EventType] ";
             }
         }
-        info_message << " from " << sender_endpoint.address().to_string()
-                     << " " << sender_endpoint.port() << '\n';
+        info_message << " from " << std::string(inet_ntoa(client_endpoint.sin_addr))
+                     << ":" << client_endpoint.sin_port;
 
-        std::cout << info_message.str();
+        std::cout << info_message.str() << std::endl;
     }
 
-    void Server::print_response(const Response &response, const udp::endpoint &sender_endpoint) const {
+    void Server::print_response(const Response &response, const sockaddr_in &client_endpoint) const {
         if (silent_mode_) {
             return;
         }
@@ -318,14 +356,18 @@ namespace UDP_server {
         }
 
         if (response.action == DataBase::ActionType::ERROR) {
-            info_message << response.error_message << " ";
+            info_message << "(" <<  response.error_message << ") ";
         }
 
-        info_message << "[ " << response.peers.size() << " in the list ]";
+        info_message << "[ " << response.peers.size() << " peer in the list ]";
 
-        info_message << " to " << sender_endpoint.address().to_string()
-                     << " " << sender_endpoint.port() << '\n';
+        info_message << " to " << std::string(inet_ntoa(client_endpoint.sin_addr))
+                     << ":" << client_endpoint.sin_port;
 
-        std::cout << info_message.str();
+        std::cout << info_message.str() << std::endl;
+    }
+
+    Server::~Server() {
+        close(socketfd_);
     }
 } //namespace UDP_server
