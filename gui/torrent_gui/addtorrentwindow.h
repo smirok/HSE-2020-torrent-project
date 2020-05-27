@@ -1,6 +1,6 @@
 #pragma once
 
-#include "API.h"
+#include "TorrentAPI.h"
 
 #include <vector>
 
@@ -18,14 +18,14 @@ class HandlerSignals : public QObject {
     Q_OBJECT
 
 public:
-    HandlerSignals(int id, API &api, std::vector<QCheckBox *> &check_boxes) : id_(id), api_(api), check_boxes_(check_boxes) {}
+    HandlerSignals(int id, TorrentAPI &api, std::vector<QCheckBox *> &check_boxes) : id_(id), api_(api), check_boxes_(check_boxes) {}
 
 public slots:
     void hand(bool bit);
 
 private:
     int id_;
-    API &api_;
+    TorrentAPI &api_;
     std::vector<QCheckBox *> &check_boxes_;
 
 };
@@ -35,7 +35,7 @@ class AddTorrentWindow : public QDialog {
     Q_OBJECT
 
 public:
-    AddTorrentWindow(QWidget *parent, API &api, QString source, QString save);
+    AddTorrentWindow(QWidget *parent, TorrentAPI &api, QString source, QString save);
     ~AddTorrentWindow();
 
     bool is_good();
@@ -46,7 +46,7 @@ private slots:
 
 private:
     Ui::AddTorrentWindow *ui_;
-    API &api_;
+    TorrentAPI &api_;
     std::vector<QCheckBox *> check_boxes_;
 
     bool good_ = false;

@@ -74,11 +74,11 @@ void MainWindow::read_database(QString database) {
 
         QString marks = json[id].toObject()["marks"].toString();
 
-        auto *widget = new QWidget();
-        auto *layout = new QHBoxLayout();
-        auto *label = new QLabel(filename);
+        auto *widget = new QWidget(this);
+        auto *layout = new QHBoxLayout(widget);
+        auto *label = new QLabel(filename, widget);
 
-        auto *progress = new QProgressBar();
+        auto *progress = new QProgressBar(this);
         QPalette palette = progress->palette();
         palette.setColor(QPalette::Highlight, QColor(0, 191, 255));
         palette.setColor(QPalette::HighlightedText, Qt::black);
@@ -90,7 +90,7 @@ void MainWindow::read_database(QString database) {
         layout->setSizeConstraint(QLayout::SetFixedSize);
         widget->setLayout(layout);
 
-        QListWidgetItem *item = new QListWidgetItem();
+        QListWidgetItem *item = new QListWidgetItem(ui_->list_cur_torrents);
         item->setSizeHint(widget->sizeHint());
 
         cur_torrens_.push_back({filename, location, marks, progress});
@@ -243,11 +243,11 @@ void MainWindow::on_action_open_torrent_triggered() {
         return;
     }
 
-    auto *widget = new QWidget();
-    auto *layout = new QHBoxLayout();
-    auto *label = new QLabel(path_to_torrent);
+    auto *widget = new QWidget(this);
+    auto *layout = new QHBoxLayout(widget);
+    auto *label = new QLabel(path_to_torrent, widget);
 
-    auto *progress = new QProgressBar();
+    auto *progress = new QProgressBar(this);
     QPalette palette = progress->palette();
     palette.setColor(QPalette::Highlight, QColor(0, 191, 255));
     palette.setColor(QPalette::HighlightedText, Qt::black);
@@ -260,7 +260,7 @@ void MainWindow::on_action_open_torrent_triggered() {
 
 
 
-    auto *item = new QListWidgetItem();
+    auto *item = new QListWidgetItem(ui_->list_cur_torrents);
     item->setSizeHint(widget->sizeHint());
 
     QString marks;
@@ -366,15 +366,19 @@ void MainWindow::update_statistic() {
     for (size_t index = 0; index < cur_torrens_.size(); index++) {
         Torrent &torrent = cur_torrens_[index];
 
-        auto *widget = new QWidget();
-        auto *layout = new QHBoxLayout();
-        auto *label = new QLabel(torrent.name_);
+        auto *widget = new QWidget(this);
+        auto *layout = new QHBoxLayout(widget);
+        auto *label = new QLabel(torrent.name_, widget);
 
         std::string file_name = torrent.name_.toStdString();
 
-        torrent.progress_bar_->setValue(static_cast<int>(api_.getInfo(file_name).percent_download));
+        torrent.progress_bar_->setValue(static_cast<int>(api_.getInfo(file_name).percent_download_));
         layout->addWidget(label);
         layout->addWidget(torrent.progress_bar_);
+
+        std::string memory = api_.getInfo(file_name).progress_info_;
+        auto *memory_label = new QLabel(QString::fromStdString(memory), widget);
+        layout->addWidget(memory_label);
 
         if (torrent.progress_bar_->value() == 100) {
             torrent.finished_ = true;

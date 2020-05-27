@@ -1,6 +1,5 @@
 #include "addtorrentwindow.h"
 #include "ui_addtorrentwindow.h"
-#include "API.h"
 
 #include <iostream>
 
@@ -22,7 +21,7 @@ void HandlerSignals::hand(bool bit) {
 }
 
 
-AddTorrentWindow::AddTorrentWindow(QWidget *parent, API &api,
+AddTorrentWindow::AddTorrentWindow(QWidget *parent, TorrentAPI &api,
                                    QString source, QString save) : QDialog(parent),
                                                                    ui_(new Ui::AddTorrentWindow),
                                                                    api_(api)

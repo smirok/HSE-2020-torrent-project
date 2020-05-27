@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "API.h"
+#include "TorrentAPI.h"
 
 #include <QMainWindow>
 #include <QThread>
@@ -71,7 +71,7 @@ private slots:
 private:
     Ui::MainWindow *ui_;
     std::vector<Torrent> cur_torrens_;
-    API api_;
+    TorrentAPI api_;
     QThread *thread_;
 
     void read_database(QString file_name);
