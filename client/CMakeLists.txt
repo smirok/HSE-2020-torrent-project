@@ -17,7 +17,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_executable(Test test/run_tests.cpp test/test.cpp
 
-        source/InfoHelper.cpp include/InfoHelper.h source/API.cpp include/API.h
+        source/InfoHelper.cpp include/InfoHelper.h source/TorrentAPI.cpp include/TorrentAPI.h
         source/Linker.cpp include/Linker.h)
 
 target_link_libraries(Test torrent-rasterbar boost_system gtest)

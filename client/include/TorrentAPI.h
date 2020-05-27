@@ -1,23 +1,15 @@
-#ifndef HSE_2020_TORRENT_PROJECT_API_H
-#define HSE_2020_TORRENT_PROJECT_API_H
+#ifndef HSE_2020_TORRENT_PROJECT_TORRENTAPI_H
+#define HSE_2020_TORRENT_PROJECT_TORRENTAPI_H
 
 #include <libtorrent/add_torrent_params.hpp>
-#include <libtorrent/torrent_info.hpp>
-#include <libtorrent/torrent_status.hpp>
 #include <libtorrent/session.hpp>
-
-#include "libtorrent/entry.hpp"
-#include "libtorrent/bencode.hpp"
-#include "libtorrent/torrent_info.hpp"
-#include "libtorrent/storage.hpp"
-#include "libtorrent/create_torrent.hpp"
 
 #include "Linker.h"
 #include "InfoHelper.h"
 #include <unordered_map>
 
-class FilesPicker {
-public:
+struct FilesPicker {
+
     void setMark(int32_t index, bool mark);
     std::vector<bool> getMarks();
     std::vector<FileNode> download_holder;
@@ -27,9 +19,9 @@ public:
     static constexpr int32_t ROOT = 0;
 };
 
-class API {
+class TorrentAPI {
 public:
-    API();
+    TorrentAPI();
 
     void prepareDownload(const std::string &file_name, const std::string &path);
 
@@ -59,10 +51,10 @@ private:
 
     void takeUpdates();
 
-    Linker linker;
-    InfoHelper info_helper;
-    lt::add_torrent_params params;
-    lt::session ses;
+    Linker linker_;
+    InfoHelper info_helper_;
+    lt::add_torrent_params params_;
+    lt::session session_;
 };
 
-#endif //HSE_2020_TORRENT_PROJECT_API_H
+#endif //HSE_2020_TORRENT_PROJECT_TORRENTAPI_H
