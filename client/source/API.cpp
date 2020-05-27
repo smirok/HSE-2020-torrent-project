@@ -35,7 +35,7 @@ void API::prepareDownload(const std::string &file_name, const std::string &path)
 
 void API::pickDownloadFiles() {
 
-    lt::file_storage const &files = p.ti->files();
+    lt::file_storage const &files = params.ti->files();
     std::string sep = "/";
 
     std::unordered_map<std::string, int32_t> is_in_tree;
@@ -69,8 +69,8 @@ void API::pickDownloadFiles() {
         }
     }
 
-    ih.dfs(picker.download_holder, tree, number_to_name, files_size, 0, 0);
-    ih.recalc_size(picker.download_holder, tree, 0);
+    info_helper.dfs(picker.download_holder, tree, number_to_name, files_size, 0, 0);
+    info_helper.recalc_size(picker.download_holder, tree, 0);
 }
 
 void FilesPicker::setMark(int32_t index, bool mark) {
@@ -88,10 +88,10 @@ void FilesPicker::setMark(int32_t index, bool mark) {
             if (!mark)
                 download_holder[current_index].is_marked_ = mark;
             else {
-                uint32_t temp_index = current_index+1;
+                uint32_t temp_index = current_index + 1;
                 uint32_t subtree_flags = 0;
                 while (temp_index < download_holder.size() &&
-                        download_holder[temp_index].level_ > download_holder[current_index].level_) {
+                       download_holder[temp_index].level_ > download_holder[current_index].level_) {
                     if (download_holder[temp_index++].is_marked_)
                         subtree_flags++;
                 }
@@ -115,9 +115,9 @@ std::vector<bool> FilesPicker::getMarks() {
 }
 
 void API::createDownload(const std::string &file_name) {
-    //p.flags |= lt::torrent_flags::seed_mode; - где сидить?
+    //params.flags |= lt::torrent_flags::seed_mode; - где сидить?
 
-    ses.async_add_torrent(p);
+    ses.async_add_torrent(params);
     std::vector<lt::alert *> alerts;
 
     int get_add_alert = false;
@@ -126,14 +126,14 @@ void API::createDownload(const std::string &file_name) {
         ses.post_torrent_updates();
         for (lt::alert const *a : alerts) {
             if (auto at = lt::alert_cast<lt::add_torrent_alert>(a)) {
-                view.converter[file_name] = at->handle;
-                view.session_handles[at->handle] = at->handle.status();
+                linker.converter[file_name] = at->handle;
+                linker.session_handles[at->handle] = at->handle.status();
                 get_add_alert = true;
 
                 int32_t current_file = 0;
                 for (const auto &object : picker.download_holder) {
                     if (object.is_leaf_)
-                        view.converter[file_name].file_priority(current_file++,
+                        linker.converter[file_name].file_priority(current_file++,
                                                                 object.is_marked_ ? lt::default_priority
                                                                                   : lt::dont_download);
                 }
@@ -147,20 +147,20 @@ void API::createDownload(const std::string &file_name) {
 void API::removeDownload(const std::string &file_name, bool should_delete) {
     takeUpdates();
 
-    lt::torrent_handle h = view.converter[file_name];
+    lt::torrent_handle h = linker.converter[file_name];
 
-    auto i = view.session_handles.find(h);
-    if (i == view.session_handles.end())
+    auto i = linker.session_handles.find(h);
+    if (i == linker.session_handles.end())
         return; // кто должен это обработать?
 
-    auto j = std::find(view.current_handles.begin(),
-                       view.current_handles.end(),
+    auto j = std::find(linker.current_handles.begin(),
+                       linker.current_handles.end(),
                        std::make_unique<lt::torrent_status>(i->second));
 
-    if (j != view.current_handles.end())
-        view.current_handles.erase(j);
+    if (j != linker.current_handles.end())
+        linker.current_handles.erase(j);
 
-    view.session_handles.erase(i);
+    linker.session_handles.erase(i);
 
     if (should_delete)
         ses.remove_torrent(h, lt::session_handle::delete_files); // потом
@@ -171,38 +171,38 @@ void API::removeDownload(const std::string &file_name, bool should_delete) {
 void API::pauseDownload(const std::string &file_name) {
     takeUpdates();
 
-    lt::torrent_handle h = view.converter[file_name];
+    lt::torrent_handle h = linker.converter[file_name];
 
     h.unset_flags(lt::torrent_flags::auto_managed);
     h.pause(lt::torrent_handle::graceful_pause);
 
-    view.converter[file_name] = h;
+    linker.converter[file_name] = h;
 }
 
 void API::resumeDownload(const std::string &file_name) {
     takeUpdates();
 
-    lt::torrent_handle h = view.converter[file_name];
+    lt::torrent_handle h = linker.converter[file_name];
     h.set_flags(lt::torrent_flags::auto_managed);
 
-    view.converter[file_name] = h;
+    linker.converter[file_name] = h;
 }
 
 void API::setPath(const std::string &path) {
-    p.save_path = path;
+    params.save_path = path;
 }
 
 void API::setFile(const std::string &file_identifier) {
     if (file_identifier.substr(0, 6) == "magnet")
-        p = lt::parse_magnet_uri(file_identifier);
+        params = lt::parse_magnet_uri(file_identifier);
     else {
-        p.ti = std::make_shared<lt::torrent_info>(file_identifier);
-        p.file_priorities.push_back(lt::dont_download);
-        p.file_priorities.push_back(lt::dont_download);
-        p.file_priorities.push_back(lt::default_priority);
-        p.file_priorities.push_back(lt::dont_download);
-        p.file_priorities.push_back(lt::dont_download);
-        p.file_priorities.push_back(lt::dont_download);
+        params.ti = std::make_shared<lt::torrent_info>(file_identifier);
+        params.file_priorities.push_back(lt::dont_download);
+        params.file_priorities.push_back(lt::dont_download);
+        params.file_priorities.push_back(lt::default_priority);
+        params.file_priorities.push_back(lt::dont_download);
+        params.file_priorities.push_back(lt::dont_download);
+        params.file_priorities.push_back(lt::dont_download);
     }
 }
 
@@ -210,21 +210,21 @@ TorrentInfo API::getInfo(const std::string &file_name) {
     takeUpdates();
 
     TorrentInfo ti;
-    ti.download_rate = ih.getDownloadRate(view.session_handles[view.converter[file_name]]);
-    ti.state = ih.getState(view.session_handles[view.converter[file_name]].state);
-    ti.remain_time = ih.getRemainTime(view.session_handles[view.converter[file_name]]);
-    ti.total_size = ih.getTotalSize(view.session_handles[view.converter[file_name]]);
-    ti.downloaded_size = ih.getDownloadedSize(view.session_handles[view.converter[file_name]]);
-    ti.file_name = ih.getName(view.session_handles[view.converter[file_name]]);
-    ti.percent_download = ih.getPercentDownloadedSize(view.session_handles[view.converter[file_name]]);
+    ti.download_rate = info_helper.getDownloadRate(linker.session_handles[linker.converter[file_name]]);
+    ti.state = info_helper.getState(linker.session_handles[linker.converter[file_name]].state);
+    ti.remain_time = info_helper.getRemainTime(linker.session_handles[linker.converter[file_name]]);
+    ti.total_size = info_helper.getTotalSize(linker.session_handles[linker.converter[file_name]]);
+    ti.downloaded_size = info_helper.getDownloadedSize(linker.session_handles[linker.converter[file_name]]);
+    ti.file_name = info_helper.getName(linker.session_handles[linker.converter[file_name]]);
+    ti.percent_download = info_helper.getPercentDownloadedSize(linker.session_handles[linker.converter[file_name]]);
     std::string double_downloaded_size = std::to_string(round(ti.downloaded_size.first * 100) / 100);
     std::string double_total_size = std::to_string(round(ti.total_size.first * 100) / 100);
-    for (int i = 0; i < 4; ++i){
+    for (int i = 0; i < 4; ++i) {
         double_downloaded_size.pop_back();
         double_total_size.pop_back();
     }
     ti.progress_info = double_downloaded_size + ti.downloaded_size.second + " of " +
-            double_total_size + ti.total_size.second;
+                       double_total_size + ti.total_size.second;
 
     return ti;
 }
@@ -234,11 +234,11 @@ void API::takeUpdates() {
     ses.pop_alerts(&alerts);
     ses.post_torrent_updates();
 
-    for (lt::alert const *a : alerts) {
-        if (auto *pr = lt::alert_cast<lt::state_update_alert>(a)) {
-            if (pr->status.empty())
+    for (const auto & alert : alerts) {
+        if (const auto & update_alert = lt::alert_cast<lt::state_update_alert>(alert)) { // fix ptrs
+            if (update_alert->status.empty())
                 continue;
-            view.updateTorrents(pr->status);
+            linker.updateTorrents(update_alert->status);
         }
     }
 }
@@ -247,6 +247,7 @@ void API::makeTorrent(const std::string &path_to_files,
                       const std::vector<std::string> &trackers,
                       const std::string &path_to_torrent_file,
                       const std::string &torrent_file_name) {
+
     lt::file_storage fs;
     add_files(fs, path_to_files);
 

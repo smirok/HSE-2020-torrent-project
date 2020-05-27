@@ -12,7 +12,7 @@
 #include "libtorrent/storage.hpp"
 #include "libtorrent/create_torrent.hpp"
 
-#include "View.h"
+#include "Linker.h"
 #include "InfoHelper.h"
 #include <iostream>
 #include <unordered_map>
@@ -24,8 +24,9 @@ public:
     std::vector<bool> getMarks();
     std::vector<FileNode> download_holder;
 
-    const int32_t MAX_FILES = 100;
-    const int32_t MAX_LENGTH = 100000;
+    static constexpr int32_t MAX_FILES = 100;
+    static constexpr int32_t MAX_LENGTH = 100000;
+    static constexpr int32_t ROOT = 0;
 };
 
 class API {
@@ -36,7 +37,7 @@ public:
 
     void pickDownloadFiles();
 
-    void createDownload(const std::string &file_name); // после конца надо удалить из вектора
+    void createDownload(const std::string &file_name);
 
     void pauseDownload(const std::string &file_name);
 
@@ -60,9 +61,9 @@ private:
 
     void takeUpdates();
 
-    View view;
-    InfoHelper ih;
-    lt::add_torrent_params p;
+    Linker linker;
+    InfoHelper info_helper;
+    lt::add_torrent_params params;
     lt::session ses;
 };
 
