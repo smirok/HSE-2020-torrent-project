@@ -29,6 +29,7 @@ API::API() {
 }
 
 void API::prepareDownload(const std::string &file_name, const std::string &path) {
+    picker.download_holder.clear();
     setFile(file_name);
     setPath(path);
 }
@@ -115,7 +116,6 @@ std::vector<bool> FilesPicker::getMarks() {
 }
 
 void API::createDownload(const std::string &file_name) {
-    //params.flags |= lt::torrent_flags::seed_mode; - где сидить?
 
     ses.async_add_torrent(params);
     std::vector<lt::alert *> alerts;
@@ -124,10 +124,10 @@ void API::createDownload(const std::string &file_name) {
     while (!get_add_alert) {
         ses.pop_alerts(&alerts);
         ses.post_torrent_updates();
-        for (lt::alert const *a : alerts) {
-            if (auto at = lt::alert_cast<lt::add_torrent_alert>(a)) {
-                linker.converter[file_name] = at->handle;
-                linker.session_handles[at->handle] = at->handle.status();
+        for (const auto & alert : alerts) {
+            if (const auto & add_alert = lt::alert_cast<lt::add_torrent_alert>(alert)) {
+                linker.converter[file_name] = add_alert->handle;
+                linker.session_handles[add_alert->handle] = add_alert->handle.status();
                 get_add_alert = true;
 
                 int32_t current_file = 0;
@@ -137,7 +137,6 @@ void API::createDownload(const std::string &file_name) {
                                                                 object.is_marked_ ? lt::default_priority
                                                                                   : lt::dont_download);
                 }
-                picker.download_holder.clear();
                 break;
             }
         }
@@ -147,45 +146,45 @@ void API::createDownload(const std::string &file_name) {
 void API::removeDownload(const std::string &file_name, bool should_delete) {
     takeUpdates();
 
-    lt::torrent_handle h = linker.converter[file_name];
+    lt::torrent_handle handle = linker.converter[file_name];
 
-    auto i = linker.session_handles.find(h);
-    if (i == linker.session_handles.end())
-        return; // кто должен это обработать?
+    auto handle_iter = linker.session_handles.find(handle);
+    if (handle_iter == linker.session_handles.end())
+        return;
 
-    auto j = std::find(linker.current_handles.begin(),
+    auto current_handle_iter = std::find(linker.current_handles.begin(),
                        linker.current_handles.end(),
-                       std::make_unique<lt::torrent_status>(i->second));
+                       std::make_unique<lt::torrent_status>(handle_iter->second));
 
-    if (j != linker.current_handles.end())
-        linker.current_handles.erase(j);
+    if (current_handle_iter != linker.current_handles.end())
+        linker.current_handles.erase(current_handle_iter);
 
-    linker.session_handles.erase(i);
+    linker.session_handles.erase(handle_iter);
 
     if (should_delete)
-        ses.remove_torrent(h, lt::session_handle::delete_files); // потом
+        ses.remove_torrent(handle, lt::session_handle::delete_files); // потом
     else
-        ses.remove_torrent(h);
+        ses.remove_torrent(handle);
 }
 
 void API::pauseDownload(const std::string &file_name) {
     takeUpdates();
 
-    lt::torrent_handle h = linker.converter[file_name];
+    lt::torrent_handle handle = linker.converter[file_name];
 
-    h.unset_flags(lt::torrent_flags::auto_managed);
-    h.pause(lt::torrent_handle::graceful_pause);
+    handle.unset_flags(lt::torrent_flags::auto_managed);
+    handle.pause(lt::torrent_handle::graceful_pause);
 
-    linker.converter[file_name] = h;
+    linker.converter[file_name] = handle;
 }
 
 void API::resumeDownload(const std::string &file_name) {
     takeUpdates();
 
-    lt::torrent_handle h = linker.converter[file_name];
-    h.set_flags(lt::torrent_flags::auto_managed);
+    lt::torrent_handle handle = linker.converter[file_name];
+    handle.set_flags(lt::torrent_flags::auto_managed);
 
-    linker.converter[file_name] = h;
+    linker.converter[file_name] = handle;
 }
 
 void API::setPath(const std::string &path) {
@@ -248,16 +247,16 @@ void API::makeTorrent(const std::string &path_to_files,
                       const std::string &path_to_torrent_file,
                       const std::string &torrent_file_name) {
 
-    lt::file_storage fs;
-    add_files(fs, path_to_files);
+    lt::file_storage fstorage;
+    add_files(fstorage, path_to_files);
 
-    lt::create_torrent t(fs);
+    lt::create_torrent creator(fstorage);
     for (auto &tracker : trackers)
-        t.add_tracker(tracker);
+        creator.add_tracker(tracker);
 
-    t.set_creator("TorrentX");
+    creator.set_creator("TorrentX");
     std::string full_path_torrent_file = path_to_torrent_file + "/" + torrent_file_name + ".torrent";
 
     std::ofstream out(full_path_torrent_file, std::ios::binary);
-    bencode(std::ostream_iterator<char>(out), t.generate());
+    bencode(std::ostream_iterator<char>(out), creator.generate());
 }

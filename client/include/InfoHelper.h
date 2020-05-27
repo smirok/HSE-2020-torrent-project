@@ -5,11 +5,12 @@
 #include <cstdint>
 #include <iostream>
 #include <unordered_map>
+#include <utility>
 #include "libtorrent/torrent_status.hpp"
 
 struct FileNode {
-    FileNode(const std::string& name, int32_t level, bool is_marked, bool is_leaf) :
-            name_(name), level_(level), is_marked_(is_marked), is_leaf_(is_leaf) {
+    FileNode(std::string name, int32_t level, bool is_marked, bool is_leaf) :
+            name_(std::move(name)), level_(level), is_marked_(is_marked), is_leaf_(is_leaf) {
     }
 
     std::string name_;

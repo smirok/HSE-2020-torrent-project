@@ -7,9 +7,9 @@ namespace Time {
 };
 
 namespace MeasureConstants {
-    constexpr uint64_t BYTES_IN_KB = 1'000; //  1 << 10
-    constexpr uint64_t BYTES_IN_MB = 1'000'000; // 1 << 20
-    constexpr uint64_t BYTES_IN_GB = 1'000'000'000; // 1 << 30
+    constexpr uint64_t BYTES_IN_KB = 1'000;
+    constexpr uint64_t BYTES_IN_MB = 1'000'000;
+    constexpr uint64_t BYTES_IN_GB = 1'000'000'000;
     constexpr int32_t CONVERT_LT_PPM = 1e4;
 }
 
@@ -75,8 +75,6 @@ std::pair<long double, std::string> InfoHelper::getDownloadedSize(const lt::torr
 
 std::pair<long double, std::string> InfoHelper::getTotalSize(const lt::torrent_status &ts) noexcept {
     return parseSize(ts.total_wanted);
-    //std::cout << ts.total_wanted << "\n";
-    //return {ts.total_wanted, "kek"};
 }
 
 uint32_t InfoHelper::getPercentDownloadedSize(const lt::torrent_status &ts) const noexcept {
@@ -96,7 +94,7 @@ void InfoHelper::dfs(std::vector<FileNode> &result, std::set<int32_t> *tree,
                      std::vector<uint64_t> &files_size,
                      int32_t vertex, int32_t lvl, int32_t parent) {
     if (parent != -1) {
-        result.emplace_back(conv[vertex], lvl, 0, tree[vertex].empty() ? true : false);
+        result.emplace_back(conv[vertex], lvl, false, tree[vertex].empty());
         if (tree[vertex].empty()) {
             result.back().fullsize_ = files_size[0];
             files_size.erase(files_size.begin());

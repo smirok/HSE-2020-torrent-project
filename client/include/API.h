@@ -14,9 +14,7 @@
 
 #include "Linker.h"
 #include "InfoHelper.h"
-#include <iostream>
 #include <unordered_map>
-#include <fstream>
 
 class FilesPicker {
 public:
@@ -66,6 +64,5 @@ private:
     lt::add_torrent_params params;
     lt::session ses;
 };
-
 
 #endif //HSE_2020_TORRENT_PROJECT_API_H
