@@ -46,18 +46,13 @@ std::string InfoHelper::endTime(int64_t remain, int64_t speed) const noexcept {
 
 void InfoHelper::dfs(std::vector<FileNode> &result, std::set<int32_t> *tree,
                      std::unordered_map<int32_t, std::string> &conv,
-                     std::vector<uint64_t> &files_size,
                      int32_t vertex, int32_t lvl, int32_t parent) {
     if (parent != -1) {
         result.emplace_back(conv[vertex], lvl, false, tree[vertex].empty());
-        if (tree[vertex].empty()) {
-            result.back().fullsize_ = files_size[0];
-            files_size.erase(files_size.begin());
-        }
     }
     for (auto child : tree[vertex])
         if (child != parent)
-            dfs(result, tree, conv, files_size, child, lvl + 1, vertex);
+            dfs(result, tree, conv, child, lvl + 1, vertex);
 }
 
 void InfoHelper::recalcSize(std::vector<FileNode> &result,

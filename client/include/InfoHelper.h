@@ -30,7 +30,6 @@ public:
 
     void dfs(std::vector<FileNode> &result, std::set<int32_t> *tree,
              std::unordered_map<int32_t, std::string> &conv,
-             std::vector<uint64_t> &files_size,
              int32_t vertex, int32_t lvl, int32_t parent = -1);
 
     void recalcSize(std::vector<FileNode> &result,

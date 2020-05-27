@@ -6,14 +6,14 @@
 #include "Linker.h"
 
 std::vector<std::pair<std::string,std::string>> torrent_pack = {
-        {"/home/ilya/skachat_igru.torrent", "."},
+        {"/home/ilya/algebra2004.torrent", "."},
 };
 
 TEST(DownloadByParts, check){
     TorrentAPI torrent_api;
     torrent_api.prepareDownload(torrent_pack[0].first, torrent_pack[0].second);
     torrent_api.pickDownloadFiles();
-    torrent_api.picker.setMark(1, true);
+    torrent_api.picker.setMark(4, true);
     torrent_api.picker.setMark(6, true);
     torrent_api.createDownload(torrent_pack[0].first);
     while (torrent_api.getInfo(torrent_pack[0].first).state_ != "finished"){

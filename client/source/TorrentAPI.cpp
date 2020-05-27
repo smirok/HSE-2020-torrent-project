@@ -46,12 +46,17 @@ void TorrentAPI::pickDownloadFiles() {
 
         std::string temp = files.file_path(iter);
         std::string name = temp;
+
         uint32_t parent_number = 0;
+
+        int32_t full_pos = 0;
+        std::string full_name = name;
 
         while (true) {
             auto pos = name.find(sep);
+            full_pos += (pos != std::string::npos) ? pos : name.size();
 
-            std::string path_part = name.substr(0, pos);
+            std::string path_part = full_name.substr(0, full_pos);
             if (!is_in_tree[path_part]) {
                 is_in_tree[path_part] = current_number++;
                 tree[parent_number].insert(is_in_tree[path_part]);
@@ -61,16 +66,29 @@ void TorrentAPI::pickDownloadFiles() {
             parent_number = is_in_tree[path_part];
 
             if (pos == std::string::npos) {
-                files_size.push_back(files.file_size(iter));
                 break;
             }
 
             name = name.substr(pos + sep.size(), FilesPicker::MAX_LENGTH);
+            ++full_pos;
         }
     }
 
-    info_helper_.dfs(picker.download_holder, tree, number_to_name, files_size, FilesPicker::ROOT, 0);
+    info_helper_.dfs(picker.download_holder, tree,
+                     number_to_name, FilesPicker::ROOT, 0);
     info_helper_.recalcSize(picker.download_holder, tree, FilesPicker::ROOT);
+
+    for (auto &holder : picker.download_holder) {
+        std::string result_name;
+
+        while (!holder.name_.empty() && holder.name_.back() != '/') {
+            result_name.push_back(holder.name_.back());
+            holder.name_.pop_back();
+        }
+
+        std::reverse(result_name.begin(), result_name.end());
+        holder.name_ = result_name;
+    }
 }
 
 void FilesPicker::setMark(int32_t index, bool mark) {
@@ -138,8 +156,8 @@ void TorrentAPI::createDownload(const std::string &file_name) {
                 for (const auto &object : picker.download_holder) {
                     if (object.is_leaf_)
                         linker_.converter[file_name].file_priority(current_file++,
-                                                                  object.is_marked_ ? lt::default_priority
-                                                                                    : lt::dont_download);
+                                                                   object.is_marked_ ? lt::default_priority
+                                                                                     : lt::dont_download);
                 }
                 break;
             }
