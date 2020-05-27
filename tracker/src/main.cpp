@@ -1,6 +1,6 @@
 #include <iostream>
-#include <boost/asio.hpp>
 #include <boost/program_options.hpp>
+#include <csignal>
 #include "UDP_server.hpp"
 #include "TorrentDataBase.hpp"
 
@@ -29,7 +29,6 @@ int main(int argc, char *argv[]) {
     }
 
     DataBase::TorrentDataBase db;
-    boost::asio::io_context io_context;
     UDP_server::Server server(db,
                               options["port"].as<uint16_t>(),
                               options["interval"].as<int32_t>(),

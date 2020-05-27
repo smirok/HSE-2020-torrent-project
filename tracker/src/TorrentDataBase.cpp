@@ -1,8 +1,4 @@
-//
-// Created by kirill on 04/04/2020.
-//
 #include <set>
-#include <iostream>
 #include "TorrentDataBase.hpp"
 
 namespace DataBase {
